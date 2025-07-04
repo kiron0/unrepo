@@ -66,8 +66,8 @@ function SuccessSuspense() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4 p-8">
-          <div className="border-t-primary h-12 w-12 animate-spin rounded-full border-4 border-gray-200" />
-          <p className="animate-pulse text-lg font-medium text-gray-700">
+          <div className="border-t-primary border-muted h-12 w-12 animate-spin rounded-full border-4" />
+          <p className="animate-pulse text-lg font-medium">
             Connecting to GitHub...
           </p>
         </div>
@@ -82,10 +82,10 @@ function SuccessSuspense() {
           <div className="text-destructive mb-6 animate-bounce text-6xl">
             <TiWarning />
           </div>
-          <h1 className="mb-3 text-3xl font-extrabold text-gray-900">
+          <h1 className="mb-3 text-3xl font-extrabold">
             Authentication Failed
           </h1>
-          <p className="mb-6 leading-relaxed text-gray-600">
+          <p className="text-muted-foreground mb-6 leading-relaxed">
             Unable to connect to your GitHub account. Please try again.
           </p>
           <Link
@@ -95,7 +95,7 @@ function SuccessSuspense() {
                 "from-primary to-secondary bg-gradient-to-tr hover:opacity-90",
             })}
           >
-            Return Home
+            <ChevronLeftIcon /> Return Home
           </Link>
         </div>
       </div>
@@ -114,12 +114,12 @@ function SuccessSuspense() {
               height={1080}
               className="mx-auto mb-4 h-24 w-24 transform rounded-full border-4 border-white shadow-lg transition-transform duration-300 hover:scale-110"
             />
-            <h1 className="mb-1 text-2xl font-bold text-gray-900">
+            <h1 className="mb-1 text-2xl font-bold">
               Welcome, {user.name || user.login}!
             </h1>
-            <p className="text-gray-500">@{user.login}</p>
+            <p className="text-muted-foreground">@{user.login}</p>
             {user.bio && (
-              <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-gray-600">
+              <p className="text-muted-foreground mx-auto mt-3 max-w-xs text-sm leading-relaxed">
                 {user.bio}
               </p>
             )}
@@ -132,7 +132,7 @@ function SuccessSuspense() {
             ].map(({ value, label }) => (
               <div
                 key={label}
-                className="bg-muted transform rounded-lg p-4 transition-all duration-200 hover:bg-gray-100"
+                className="bg-muted border-muted transform rounded-lg border p-4 transition-all duration-300 hover:bg-transparent"
               >
                 <p className="text-xl font-bold">{value}</p>
                 <p className="text-muted-foreground text-center text-xs">
@@ -141,7 +141,7 @@ function SuccessSuspense() {
               </div>
             ))}
           </div>
-          <div>
+          <div className="flex w-full flex-col items-center gap-4">
             <Link
               href="/repos"
               className={buttonVariants({
@@ -156,7 +156,6 @@ function SuccessSuspense() {
               href="/"
               className={buttonVariants({
                 variant: "outline",
-                className: "mt-4",
               })}
             >
               <ChevronLeftIcon /> Return Home

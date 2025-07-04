@@ -19,6 +19,6 @@ export const notifyError = ({ description, title }: ToastProps) => {
   toast({
     title: title || "Error",
     description,
-    variant: "error",
+    variant: "destructive",
   })
 }

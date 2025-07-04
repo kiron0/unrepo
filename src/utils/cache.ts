@@ -57,7 +57,7 @@ export function getCachedUserData(): GitHubUser | null {
 /**
  * Clear cached user data from localStorage
  */
-export function clearCachedUserData(): void {
+export async function clearCachedUserData(): Promise<void> {
   if (typeof window === "undefined") return
 
   try {
@@ -140,7 +140,7 @@ export function getCachedRepositories(): Repository[] | null {
 /**
  * Clear cached repositories data from localStorage
  */
-export function clearCachedRepositories(): void {
+export async function clearCachedRepositories(): Promise<void> {
   if (typeof window === "undefined") return
 
   try {

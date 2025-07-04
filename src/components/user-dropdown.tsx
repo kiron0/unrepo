@@ -1,8 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { getCachedUserData } from "@/utils/cache"
+import {
+  clearCachedRepositories,
+  clearCachedUserData,
+  getCachedUserData,
+} from "@/utils/cache"
 import { LogOut, UserIcon } from "lucide-react"
 import { useRouter } from "nextjs-toploader/app"
 import { GoRepo } from "react-icons/go"
@@ -28,6 +33,8 @@ export function UserDropdown({
   className,
   contentClassName,
 }: UserDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false)
+
   const router = useRouter()
   const pathname = usePathname()
 
@@ -43,9 +50,15 @@ export function UserDropdown({
         }
       })
 
+      await clearCachedUserData()
+      await clearCachedRepositories()
+
       if (pathname !== "/") {
         router.push("/")
       }
+
+      setIsOpen(false)
+      router.refresh()
     } catch (error) {
       console.error("Logout error:", error)
       router.push("/")
@@ -55,7 +68,9 @@ export function UserDropdown({
   return (
     <div className="flex items-center gap-2">
       <div className="flex flex-col items-end">
-        <p className="font-medium">Hello, {user?.name?.split(" ")?.[0]}</p>
+        <p className="from-primary to-secondary bg-gradient-to-tr bg-clip-text font-medium text-transparent">
+          Hello, {user?.name?.split(" ")?.[0]}
+        </p>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger
@@ -124,6 +139,8 @@ export function UserDropdown({
             title="Are you sure you want to logout?"
             description="You will be logged out and redirected to the home page."
             func={() => handleLogout()}
+            open={isOpen}
+            setOpen={setIsOpen}
           />
         </DropdownMenuContent>
       </DropdownMenu>

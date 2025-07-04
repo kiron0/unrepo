@@ -4,10 +4,22 @@ import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { Repository } from "@/types"
-import { getCachedRepositories, setCachedRepositories } from "@/utils/cache"
-import { AlertTriangle, LogOut, RefreshCw, Search, Trash2 } from "lucide-react"
+import {
+  clearCachedRepositories,
+  clearCachedUserData,
+  getCachedRepositories,
+  setCachedRepositories,
+} from "@/utils/cache"
+import {
+  AlertTriangle,
+  HouseIcon,
+  LogOut,
+  RefreshCw,
+  Search,
+  Trash2,
+} from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AlertDialogHelper } from "@/components/alert-dialog-helper"
 import { notifyError, notifySuccess } from "@/components/toast"
@@ -21,6 +33,7 @@ export function Repos() {
   const [loading, setLoading] = useState(false)
   const [selectedRepos, setSelectedRepos] = useState<string[]>([])
   const [totalPages, setTotalPages] = useState(1)
+  const [isOpen, setIsOpen] = useState(false)
 
   const [filters, setFilters] = useState<FilterParams>({
     search: "",
@@ -126,6 +139,12 @@ export function Repos() {
 
   const handleSearch = useCallback(
     (searchTerm: string) => {
+      if (searchTerm.trim() === "") {
+        return notifyError({
+          title: "Search Error",
+          description: "Search term cannot be empty.",
+        })
+      }
       handleFilterChange("search", searchTerm)
     },
     [handleFilterChange]
@@ -153,7 +172,6 @@ export function Repos() {
         (repo) => repo.full_name !== fullName
       )
       setRepositories(updatedRepos)
-      // Update local storage with the new repository list
       setCachedRepositories(updatedRepos)
 
       notifySuccess({
@@ -225,7 +243,17 @@ export function Repos() {
           })
         }
       })
+
       router.push("/")
+
+      setSelectedRepos([])
+      setRepositories([])
+
+      await clearCachedUserData()
+      await clearCachedRepositories()
+
+      setIsOpen(false)
+      router.refresh()
     } catch (error) {
       console.error("Logout error:", error)
       router.push("/")
@@ -274,9 +302,7 @@ export function Repos() {
     <div className="container mx-auto p-6">
       <div className="mb-6 flex flex-col items-center justify-between gap-5 md:flex-row">
         <div>
-          <Link href="/" className="text-3xl font-bold">
-            GitHub Repositories
-          </Link>
+          <h3 className="text-3xl font-bold">GitHub Repositories</h3>
           <p className="text-muted-foreground">
             Manage and clean up your repositories
           </p>
@@ -288,33 +314,63 @@ export function Repos() {
             variant="outline"
           >
             <RefreshCw className={loading ? "animate-spin" : ""} />
-            Refresh
           </Button>
+          <Link href="/" className={buttonVariants({ variant: "outline" })}>
+            <HouseIcon className="h-4 w-4" />
+          </Link>
           <AlertDialogHelper
             trigger={
               <Button className="w-full" variant="destructive">
                 <LogOut className="h-4 w-4" />
-                Logout
               </Button>
             }
             title="Are you sure you want to logout?"
             description="You will be redirected to the home page."
             func={() => handleLogout()}
+            open={isOpen}
+            setOpen={setIsOpen}
           />
         </div>
       </div>
 
       <div className="mb-6 flex flex-col gap-4">
         <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between lg:justify-end">
-          <div className="relative w-full max-w-md">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-            <Input
-              placeholder="Quick search repositories..."
-              value={filters.search}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSearch(filters.search)
+            }}
+            className="relative flex w-full max-w-md gap-2"
+          >
+            <div className="relative flex-1">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                placeholder="Quick search repositories..."
+                value={filters.search}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, search: e.target.value }))
+                }
+                className="pl-10"
+              />
+            </div>
+            {filters.search && repositories.length > 0 ? (
+              <Button
+                variant="destructive"
+                type="button"
+                onClick={() => {
+                  setFilters((prev) => ({ ...prev, search: "" }))
+                  fetchRepositories(true, { ...filters, search: "" })
+                }}
+                disabled={loading}
+              >
+                Clear
+              </Button>
+            ) : (
+              <Button type="submit" disabled={loading}>
+                <Search className="h-4 w-4" />
+              </Button>
+            )}
+          </form>
           <RepoFilters
             filters={filters}
             onFilterChange={handleFilterChange}

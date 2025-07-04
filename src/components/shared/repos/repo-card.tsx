@@ -27,11 +27,14 @@ export function RepoCard({
   onDelete,
 }: RepoCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      await onDelete(repo.full_name)
+      await onDelete(repo.full_name).then(() => {
+        setIsDeleteOpen(false)
+      })
     } finally {
       setIsDeleting(false)
     }
@@ -90,6 +93,8 @@ export function RepoCard({
             description={`This action cannot be undone. The repository "${repo.name}" will be permanently deleted.`}
             func={() => handleDelete()}
             disabled={isDeleting}
+            open={isDeleteOpen}
+            setOpen={setIsDeleteOpen}
           />
         </div>
       </CardHeader>

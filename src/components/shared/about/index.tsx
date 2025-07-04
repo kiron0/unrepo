@@ -1,5 +1,3 @@
-"use client"
-
 import { siteConfig } from "@/config"
 import { getGitHubToken } from "@/utils/cookies"
 import { Shield } from "lucide-react"
