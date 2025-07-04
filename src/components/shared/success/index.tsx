@@ -8,6 +8,7 @@ import type { GitHubUser } from "@/types"
 import { getCachedUserData, setCachedUserData } from "@/utils/cache"
 import { getGitHubToken, setGitHubToken } from "@/utils/cookies"
 import axios from "axios"
+import { ChevronLeftIcon } from "lucide-react"
 import { GoRepo } from "react-icons/go"
 import { TiWarning } from "react-icons/ti"
 
@@ -103,7 +104,7 @@ function SuccessSuspense() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-lg transform rounded-2xl border p-8 shadow-lg transition-all duration-300 hover:scale-[1.02]">
+      <div className="w-full max-w-lg transform rounded-3xl border p-6 shadow-lg transition-all md:p-8">
         <div className="flex flex-col items-center text-center">
           <div className="mb-8">
             <Image
@@ -140,16 +141,27 @@ function SuccessSuspense() {
               </div>
             ))}
           </div>
-          <Link
-            href="/repos"
-            className={buttonVariants({
-              className:
-                "from-primary to-secondary bg-gradient-to-tr hover:opacity-90",
-            })}
-          >
-            <GoRepo />
-            View Your Repositories
-          </Link>
+          <div>
+            <Link
+              href="/repos"
+              className={buttonVariants({
+                className:
+                  "from-primary to-secondary bg-gradient-to-tr hover:opacity-90",
+              })}
+            >
+              <GoRepo />
+              View Your Repositories
+            </Link>
+            <Link
+              href="/"
+              className={buttonVariants({
+                variant: "outline",
+                className: "mt-4",
+              })}
+            >
+              <ChevronLeftIcon /> Return Home
+            </Link>
+          </div>
         </div>
       </div>
     </div>

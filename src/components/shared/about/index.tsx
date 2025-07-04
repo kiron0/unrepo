@@ -1,6 +1,7 @@
 "use client"
 
 import { siteConfig } from "@/config"
+import { getGitHubToken } from "@/utils/cookies"
 import { Shield } from "lucide-react"
 
 import { Footer } from "@/components/footer"
@@ -9,10 +10,12 @@ import { Developer } from "@/components/shared/about/developer"
 import { Features } from "@/components/shared/about/features"
 import { Mission } from "@/components/shared/about/mission"
 
-export function About() {
+export async function About() {
+  const isLoggedIn = (await getGitHubToken()) !== null
+
   return (
     <section className="min-h-screen">
-      <Navbar />
+      <Navbar isLoggedIn={isLoggedIn} />
       <div className="container mx-auto space-y-20 px-4 pt-24 pb-8 md:pt-32 lg:px-8 lg:pt-36">
         <div className="text-center">
           <div className="text-muted-foreground mx-auto mb-6 w-fit rounded-full border px-4 py-2 text-sm font-medium">

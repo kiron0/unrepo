@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { siteConfig } from "@/config"
-import { Github, GithubIcon, LogOut, User } from "lucide-react"
+import { ChevronRightIcon, GithubIcon, LogOut } from "lucide-react"
+import { GoRepo } from "react-icons/go"
 import { HiOutlineMenuAlt4 } from "react-icons/hi"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
@@ -18,13 +19,21 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 
+import { AlertDialogHelper } from "./alert-dialog-helper"
 import { ThemeSwitcher } from "./theme-switcher"
+import { notifySuccess } from "./toast"
+import { UserDropdown } from "./user-dropdown"
 
-export function Navbar() {
+interface NavbarProps {
+  isLoggedIn: boolean
+}
+
+export function Navbar({ isLoggedIn }: NavbarProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,27 +49,32 @@ export function Navbar() {
 
   const closeSheet = () => setIsSheetOpen(false)
 
-  const handleLogout = () => {
-    router.push("/")
-    closeSheet()
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" }).then((res) => {
+        if (res.ok) {
+          notifySuccess({
+            description: "You have been logged out successfully.",
+          })
+        }
+      })
+
+      if (isSheetOpen) {
+        closeSheet()
+      }
+
+      if (pathname !== "/") {
+        router.push("/")
+      }
+    } catch (error) {
+      console.error("Logout error:", error)
+      router.push("/")
+    }
   }
 
   const AuthButton = () => {
     if (isLoggedIn) {
-      return (
-        <div className="flex items-center gap-2">
-          <Link href="/dashboard">
-            <Button variant="outline" size="sm">
-              <User className="h-4 w-4" />
-              Dashboard
-            </Button>
-          </Link>
-          <Button onClick={handleLogout} size="sm" variant="outline">
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      )
+      return <UserDropdown contentClassName="mr-2 lg:mr-0 mt-2 sm:mt-2" />
     }
 
     return (
@@ -69,8 +83,8 @@ export function Navbar() {
           size="sm"
           className="from-primary to-secondary bg-gradient-to-tr hover:opacity-90"
         >
-          <Github className="h-4 w-4" />
-          Connect GitHub
+          <GithubIcon />
+          Get Started
         </Button>
       </Link>
     )
@@ -100,6 +114,8 @@ export function Navbar() {
             >
               About
             </Link>
+          </div>
+          <div className="hidden items-center gap-4 md:flex">
             <AuthButton />
             <ThemeSwitcher />
           </div>
@@ -138,27 +154,42 @@ export function Navbar() {
                 <div className="space-y-2 pt-6">
                   {isLoggedIn ? (
                     <>
-                      <Link href="/dashboard" onClick={closeSheet}>
-                        <Button className="w-full" variant="outline">
-                          <User className="h-4 w-4" />
-                          Dashboard
-                        </Button>
-                      </Link>
-                      <Button
-                        className="w-full"
-                        variant="outline"
-                        onClick={handleLogout}
+                      <Link
+                        href="/repos"
+                        onClick={closeSheet}
+                        className={buttonVariants({
+                          className:
+                            "from-primary to-secondary w-full bg-gradient-to-tr text-white hover:opacity-90",
+                        })}
                       >
-                        <LogOut className="h-4 w-4" />
-                        Logout
-                      </Button>
+                        <GoRepo className="h-4 w-4" />
+                        Repositories
+                      </Link>
+                      <AlertDialogHelper
+                        trigger={
+                          <Button className="w-full" variant="destructive">
+                            <LogOut className="h-4 w-4" />
+                            Logout
+                          </Button>
+                        }
+                        title="Are you sure you want to logout?"
+                        description="You will be redirected to the home page."
+                        func={() => handleLogout()}
+                      />
                     </>
                   ) : (
-                    <Link href="/login" onClick={closeSheet}>
-                      <Button className="from-primary to-secondary w-full bg-gradient-to-tr text-white hover:opacity-90">
-                        <GithubIcon className="h-4 w-4" />
-                        Connect GitHub
-                      </Button>
+                    <Link
+                      href="/login"
+                      onClick={closeSheet}
+                      className={buttonVariants({
+                        variant: "outline",
+                        className:
+                          "from-primary to-secondary w-full bg-gradient-to-tr text-white hover:opacity-90",
+                      })}
+                    >
+                      <GithubIcon className="h-5 w-5 transition-transform group-hover:scale-110" />
+                      Get Started
+                      <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   )}
                 </div>

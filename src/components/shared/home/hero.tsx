@@ -1,11 +1,50 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowRightIcon, GithubIcon, ZapIcon } from "lucide-react"
+import { ChevronRightIcon, GithubIcon, ZapIcon } from "lucide-react"
+import { GoRepo } from "react-icons/go"
 
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 
-export function Hero() {
+interface HeroProps {
+  isLoggedIn: boolean
+}
+
+export function Hero({ isLoggedIn }: HeroProps) {
+  const AuthButton = () => {
+    if (isLoggedIn) {
+      return (
+        <Link
+          href="/repos"
+          className={buttonVariants({
+            size: "lg",
+            className:
+              "group from-primary to-secondary text-primary-foreground hover:shadow-primary/50 bg-gradient-to-tr text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl",
+          })}
+        >
+          <GoRepo className="h-5 w-5 transition-transform group-hover:scale-110" />
+          Repositories
+          <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </Link>
+      )
+    }
+
+    return (
+      <Link
+        href="/login"
+        className={buttonVariants({
+          size: "lg",
+          className:
+            "group from-primary to-secondary text-primary-foreground hover:shadow-primary/50 bg-gradient-to-tr text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl",
+        })}
+      >
+        <GithubIcon className="h-5 w-5 transition-transform group-hover:scale-110" />
+        Get Started
+        <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+      </Link>
+    )
+  }
+
   return (
     <div className="mx-auto mb-20 w-full text-center">
       <div className="text-muted-foreground mx-auto mb-6 w-fit rounded-full border px-4 py-2 text-sm font-medium">
@@ -27,16 +66,7 @@ export function Hero() {
         operations.
       </p>
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-        <Link href="/login">
-          <Button
-            size="lg"
-            className="group from-primary to-secondary text-primary-foreground hover:shadow-primary/50 h-12 bg-gradient-to-tr px-8 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl"
-          >
-            <GithubIcon className="h-5 w-5 transition-transform group-hover:scale-110" />
-            Get Started
-            <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Button>
-        </Link>
+        <AuthButton />
       </div>
     </div>
   )

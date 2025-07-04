@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { Repository } from "@/types"
 import { getCachedRepositories, setCachedRepositories } from "@/utils/cache"
@@ -8,6 +9,7 @@ import { AlertTriangle, LogOut, RefreshCw, Search, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { AlertDialogHelper } from "@/components/alert-dialog-helper"
 import { notifyError, notifySuccess } from "@/components/toast"
 
 import { RepoCard } from "./repo-card"
@@ -75,12 +77,10 @@ export function Repos() {
   )
 
   const fetchRepositories = useCallback(
-    async (forceRefresh = false, newFilters?: FilterParams) => {
+    async (forceRefresh = false, currentFilters: FilterParams) => {
       setLoading(true)
       try {
-        const currentFilters = newFilters || filters
-
-        if (!forceRefresh && !newFilters) {
+        if (!forceRefresh) {
           const cachedRepos = getCachedRepositories()
           if (cachedRepos) {
             setRepositories(cachedRepos)
@@ -92,9 +92,7 @@ export function Repos() {
         const repos = await fetchRepositoriesFromAPI(currentFilters)
         if (repos) {
           setRepositories(repos)
-          if (!newFilters) {
-            setCachedRepositories(repos)
-          }
+          setCachedRepositories(repos)
 
           if (repos.length === currentFilters.per_page) {
             setTotalPages(currentFilters.page + 1)
@@ -106,7 +104,7 @@ export function Repos() {
         setLoading(false)
       }
     },
-    [fetchRepositoriesFromAPI, filters]
+    [fetchRepositoriesFromAPI]
   )
 
   const refreshRepositories = useCallback(async () => {
@@ -218,9 +216,15 @@ export function Repos() {
     }
   }
 
-  const logout = async () => {
+  const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" })
+      await fetch("/api/auth/logout", { method: "POST" }).then((res) => {
+        if (res.ok) {
+          notifySuccess({
+            description: "You have been logged out successfully.",
+          })
+        }
+      })
       router.push("/")
     } catch (error) {
       console.error("Logout error:", error)
@@ -246,19 +250,33 @@ export function Repos() {
 
   useEffect(() => {
     const tokenFromUrl = searchParams.get("token")
-
     if (tokenFromUrl) {
       window.history.replaceState({}, "", "/repos")
     }
+  }, [searchParams])
 
-    fetchRepositories(false, filters)
-  }, [searchParams, fetchRepositories, filters])
+  useEffect(() => {
+    const initialFilters = {
+      search: "",
+      affiliation: "owner",
+      type: "all",
+      visibility: "all",
+      sort: "updated",
+      direction: "desc",
+      per_page: 30,
+      page: 1,
+    } as FilterParams
+
+    fetchRepositories(false, initialFilters)
+  }, [fetchRepositories])
 
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex flex-col items-center justify-between gap-5 md:flex-row">
         <div>
-          <h1 className="text-3xl font-bold">GitHub Repositories</h1>
+          <Link href="/" className="text-3xl font-bold">
+            GitHub Repositories
+          </Link>
           <p className="text-muted-foreground">
             Manage and clean up your repositories
           </p>
@@ -272,10 +290,17 @@ export function Repos() {
             <RefreshCw className={loading ? "animate-spin" : ""} />
             Refresh
           </Button>
-          <Button onClick={logout} variant="outline">
-            <LogOut />
-            Logout
-          </Button>
+          <AlertDialogHelper
+            trigger={
+              <Button className="w-full" variant="destructive">
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            }
+            title="Are you sure you want to logout?"
+            description="You will be redirected to the home page."
+            func={() => handleLogout()}
+          />
         </div>
       </div>
 
