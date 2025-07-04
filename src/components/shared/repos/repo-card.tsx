@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import type { Repository } from "@/types"
-import { RefreshCw, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import moment from "moment"
 import { FaStar } from "react-icons/fa"
 import { GoRepoForked } from "react-icons/go"
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { AlertDialogHelper } from "@/components/alert-dialog-helper"
 
 interface RepoCardProps {
   repo: Repository
@@ -79,14 +80,17 @@ export function RepoCard({
               </p>
             </div>
           </div>
-          <Button
-            onClick={handleDelete}
+          <AlertDialogHelper
+            trigger={
+              <Button variant="destructive" size="sm">
+                <Trash2 />
+              </Button>
+            }
+            title={`Delete Repository "${repo.name}"`}
+            description={`This action cannot be undone. The repository "${repo.name}" will be permanently deleted.`}
+            func={() => handleDelete()}
             disabled={isDeleting}
-            variant="destructive"
-            size="sm"
-          >
-            {isDeleting ? <RefreshCw className="animate-spin" /> : <Trash2 />}
-          </Button>
+          />
         </div>
       </CardHeader>
     </Card>
