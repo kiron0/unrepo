@@ -13,9 +13,9 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
           <div className="flex items-center space-x-3">
             <div className="from-primary to-secondary flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-tr">
-              <GithubIcon className="text-primary-foreground h-4 w-4" />
+              <GithubIcon className="h-4 w-4" />
             </div>
-            <span className="from-foreground to-muted-foreground bg-gradient-to-r bg-clip-text text-lg font-bold tracking-tight text-transparent">
+            <span className="from-primary to-secondary bg-gradient-to-tr bg-clip-text text-lg font-bold tracking-tight text-transparent">
               {siteConfig.name}
             </span>
           </div>

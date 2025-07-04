@@ -6,6 +6,7 @@ import { siteConfig } from "@/config"
 import { Github, GithubIcon } from "lucide-react"
 import { HiOutlineMenuAlt4 } from "react-icons/hi"
 
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -15,6 +16,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+
+import { ThemeSwitcher } from "./theme-switcher"
 
 export function Navbar() {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -33,7 +36,10 @@ export function Navbar() {
 
   return (
     <nav
-      className={`bg-background/80 fixed top-0 z-50 w-full backdrop-blur-xl ${isScrolled ? "border-b" : ""}`}
+      className={cn(
+        "bg-background/80 fixed top-0 z-50 w-full backdrop-blur-xl",
+        isScrolled ? "border-b" : ""
+      )}
     >
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex h-16 items-center justify-between">
@@ -45,10 +51,10 @@ export function Navbar() {
               {siteConfig.name}
             </span>
           </Link>
-          <div className="hidden items-center space-x-8 md:flex">
+          <div className="hidden items-center gap-4 md:flex">
             <Link
               href="/about"
-              className="font-medium text-slate-600 transition-colors hover:text-slate-900"
+              className="hover:text-foreground text-muted-foreground font-medium transition-colors"
             >
               About
             </Link>
@@ -59,14 +65,18 @@ export function Navbar() {
               <Github className="h-4 w-4" />
               Connect GitHub
             </Button>
+            <ThemeSwitcher />
           </div>
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <button className="inline-flex h-9 items-center justify-center px-4 py-2 md:hidden">
-                <HiOutlineMenuAlt4 className="text-muted-foreground size-6" />
-                <span className="sr-only">Open menu</span>
-              </button>
-            </SheetTrigger>
+            <div className="flex items-center md:hidden">
+              <ThemeSwitcher />
+              <SheetTrigger asChild>
+                <button className="inline-flex h-9 items-center justify-center px-4 py-2 md:hidden">
+                  <HiOutlineMenuAlt4 className="text-muted-foreground size-6" />
+                  <span className="sr-only">Open menu</span>
+                </button>
+              </SheetTrigger>
+            </div>
             <SheetContent side="right" className="w-full max-w-xs">
               <SheetHeader>
                 <SheetTitle className="flex items-center space-x-3">

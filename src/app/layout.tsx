@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Space_Grotesk } from "next/font/google"
+import { Providers } from "@/providers"
 
 import { cn } from "@/lib/utils"
 
@@ -22,9 +23,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={cn("antialiased", spaceGrotesk.className)}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

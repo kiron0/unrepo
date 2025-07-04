@@ -57,7 +57,7 @@ export function Features() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-base leading-relaxed text-slate-600">
+              <CardDescription className="text-muted-foreground text-base leading-relaxed">
                 {feature.description}
               </CardDescription>
             </CardContent>
