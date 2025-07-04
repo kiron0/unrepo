@@ -42,7 +42,7 @@ export function Features() {
           key={i}
           className="group bg-card/60 hover:shadow-primary/10 relative overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-xl"
         >
-          <div className="from-primary/5 to-secondary/20 absolute inset-0 bg-gradient-to-r opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <div className="from-primary/5 to-secondary/10 absolute inset-0 bg-gradient-to-r opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           <CardHeader className="pb-4">
             <div className="bg-secondary group-hover:bg-secondary/80 mb-4 flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-300 group-hover:scale-110">
               <feature.icon className="h-7 w-7" />

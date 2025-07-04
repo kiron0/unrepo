@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { siteConfig } from "@/config"
-import { ChevronLeftIcon, Github, Menu, Trash2 } from "lucide-react"
+import { Github, GithubIcon } from "lucide-react"
+import { HiOutlineMenuAlt4 } from "react-icons/hi"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -16,14 +16,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 
-interface NavbarProps {
-  showBackButton?: boolean
-}
-
-export function Navbar({ showBackButton = false }: NavbarProps) {
+export function Navbar() {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const router = useRouter()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,26 +37,18 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
     >
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <Link
-            href={showBackButton ? "#" : "/"}
-            onClick={showBackButton ? () => router.back() : undefined}
-            className="flex items-center space-x-3"
-          >
+          <Link href="/" className="flex items-center space-x-3">
             <div className="from-primary to-accent flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-tr">
-              {showBackButton ? (
-                <ChevronLeftIcon className="h-4 w-4 text-white" />
-              ) : (
-                <Trash2 className="h-4 w-4 text-white" />
-              )}
+              <GithubIcon className="h-4 w-4 text-white" />
             </div>
-            <span className="from-primary to-secondary bg-gradient-to-tr bg-clip-text text-lg font-bold tracking-tight text-transparent dark:from-white dark:to-slate-300">
-              {showBackButton ? "Back" : ""} {siteConfig.name}
+            <span className="from-primary to-secondary bg-gradient-to-tr bg-clip-text text-lg font-bold tracking-tight text-transparent">
+              {siteConfig.name}
             </span>
           </Link>
           <div className="hidden items-center space-x-8 md:flex">
             <Link
               href="/about"
-              className="font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className="font-medium text-slate-600 transition-colors hover:text-slate-900"
             >
               About
             </Link>
@@ -75,16 +62,16 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
           </div>
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+              <button className="inline-flex h-9 items-center justify-center px-4 py-2 md:hidden">
+                <HiOutlineMenuAlt4 className="text-muted-foreground size-6" />
                 <span className="sr-only">Open menu</span>
-              </Button>
+              </button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full max-w-xs">
               <SheetHeader>
                 <SheetTitle className="flex items-center space-x-3">
                   <div className="from-primary to-secondary flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-tr">
-                    <Trash2 className="h-4 w-4 text-white" />
+                    <GithubIcon className="h-4 w-4 text-white" />
                   </div>
                   <span className="text-lg font-bold tracking-tight">
                     {siteConfig.name}
@@ -102,12 +89,12 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
                 >
                   About
                 </Link>
-                <div className="border-t pt-6">
+                <div className="pt-6">
                   <Button
                     className="from-primary to-secondary w-full bg-gradient-to-tr text-white hover:opacity-90"
                     onClick={closeSheet}
                   >
-                    <Github className="mr-2 h-4 w-4" />
+                    <GithubIcon />
                     Connect GitHub
                   </Button>
                 </div>

@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button"
 
 export function Hero() {
   return (
-    <div className="mx-auto mb-20 max-w-4xl text-center">
-      <div className="bg-card/60 text-card-foreground mb-6 inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-sm">
-        <ZapIcon className="text-primary mr-2 h-4 w-4" />
+    <div className="mx-auto mb-20 w-full text-center">
+      <div className="text-muted-foreground mx-auto mb-6 w-fit rounded-full border px-4 py-2 text-sm font-medium">
+        <ZapIcon className="mr-2 inline-flex h-4 w-4" />
         <span>Clean up your GitHub repositories effortlessly</span>
       </div>
       <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">

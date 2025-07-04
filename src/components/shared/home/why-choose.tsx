@@ -7,15 +7,15 @@ import { Badge } from "@/components/ui/badge"
 
 export function WhyChoose() {
   return (
-    <div className="bg-card/60 rounded-3xl p-8 shadow-lg lg:p-12">
+    <div className="rounded-xl p-8 shadow-md lg:p-8">
       <div className="grid items-center gap-12 lg:grid-cols-2">
         <div className="space-y-8">
           <div>
             <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-4xl">
               <span className="from-foreground to-muted-foreground bg-gradient-to-r bg-clip-text text-transparent">
                 Why Choose
-              </span>
-              <br />
+              </span>{" "}
+              <br className="md:hidden" />
               <span className="from-primary to-secondary bg-gradient-to-tr bg-clip-text text-transparent">
                 {siteConfig.name}?
               </span>
@@ -26,7 +26,7 @@ export function WhyChoose() {
             </p>
           </div>
           <div className="space-y-6">
-            <div className="flex items-start space-x-4">
+            <div className="flex flex-col items-start gap-2 space-x-4 md:flex-row md:gap-0">
               <Badge
                 variant="secondary"
                 className="bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold"
@@ -44,7 +44,7 @@ export function WhyChoose() {
                 </p>
               </div>
             </div>
-            <div className="flex items-start space-x-4">
+            <div className="flex flex-col items-start gap-2 space-x-4 md:flex-row md:gap-0">
               <Badge
                 variant="secondary"
                 className="bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold"
@@ -62,7 +62,7 @@ export function WhyChoose() {
                 </p>
               </div>
             </div>
-            <div className="flex items-start space-x-4">
+            <div className="flex flex-col items-start gap-2 space-x-4 md:flex-row md:gap-0">
               <Badge
                 variant="secondary"
                 className="bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold"
