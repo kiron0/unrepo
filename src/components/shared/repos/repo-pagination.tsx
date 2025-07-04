@@ -15,7 +15,7 @@ interface RepositoryPaginationProps {
   onPageChange: (page: number) => void
 }
 
-export function RepositoryPagination({
+export function RepoPagination({
   currentPage,
   totalPages,
   onPageChange,

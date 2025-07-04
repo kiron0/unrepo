@@ -3,6 +3,7 @@
 import { useState } from "react"
 import type { Repository } from "@/types"
 import { RefreshCw, Trash2 } from "lucide-react"
+import moment from "moment"
 import { FaStar } from "react-icons/fa"
 import { GoRepoForked } from "react-icons/go"
 
@@ -11,19 +12,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 
-interface RepositoryCardProps {
+interface RepoCardProps {
   repo: Repository
   isSelected: boolean
   onToggleSelection: (fullName: string) => void
   onDelete: (fullName: string) => Promise<void>
 }
 
-export function RepositoryCard({
+export function RepoCard({
   repo,
   isSelected,
   onToggleSelection,
   onDelete,
-}: RepositoryCardProps) {
+}: RepoCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDelete = async () => {
@@ -60,7 +61,7 @@ export function RepositoryCard({
               <p className="text-muted-foreground mt-1 text-sm">
                 {repo.description || "No description"}
               </p>
-              <div className="mt-2 flex items-center gap-4">
+              <div className="mt-3 flex flex-wrap items-center gap-4">
                 {repo.language && (
                   <Badge variant="secondary">{repo.language}</Badge>
                 )}
@@ -71,10 +72,11 @@ export function RepositoryCard({
                 <span className="text-muted-foreground flex items-center gap-1 text-sm">
                   <GoRepoForked /> {repo.forks_count}
                 </span>
-                <span className="text-muted-foreground text-sm">
-                  Updated {new Date(repo.updated_at).toLocaleDateString()}
-                </span>
               </div>
+              <p className="text-muted-foreground mt-3 text-xs">
+                Last updated {moment(repo.updated_at).fromNow()} (
+                {moment(repo.updated_at).format("MMM Do, YYYY, hh:mm:ss A")})
+              </p>
             </div>
           </div>
           <Button

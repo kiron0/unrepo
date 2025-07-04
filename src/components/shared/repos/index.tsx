@@ -4,15 +4,15 @@ import { useCallback, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { Repository } from "@/types"
 import { getCachedRepositories, setCachedRepositories } from "@/utils/cache"
-import { AlertTriangle, LogOut, RefreshCw, Trash2 } from "lucide-react"
+import { AlertTriangle, LogOut, RefreshCw, Search, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { notifyError, notifySuccess } from "@/components/toast"
 
-import { RepositoryCard } from "./repo-card"
-import { RepositoryFilters, type FilterParams } from "./repo-filters"
-import { RepositoryPagination } from "./repo-pagination"
+import { RepoCard } from "./repo-card"
+import { RepoFilters, type FilterParams } from "./repo-filters"
+import { RepoPagination } from "./repo-pagination"
 
 export function Repos() {
   const [repositories, setRepositories] = useState<Repository[]>([])
@@ -279,12 +279,25 @@ export function Repos() {
         </div>
       </div>
 
-      <RepositoryFilters
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onSearch={handleSearch}
-        repositoryCount={repositories.length}
-      />
+      <div className="mb-6 flex flex-col gap-4">
+        <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between lg:justify-end">
+          <div className="relative w-full max-w-md">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+            <Input
+              placeholder="Quick search repositories..."
+              value={filters.search}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <RepoFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onSearch={handleSearch}
+            repositoryCount={repositories.length}
+          />
+        </div>
+      </div>
 
       {selectedRepos.length > 0 && (
         <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
@@ -315,37 +328,35 @@ export function Repos() {
       )}
 
       {loading ? (
-        <div className="py-8 text-center">
+        <div className="py-16 text-center">
           <RefreshCw className="mx-auto mb-4 h-8 w-8 animate-spin" />
           <p>Loading repositories...</p>
         </div>
       ) : (
         <>
-          <div className="grid gap-4">
-            {repositories.length === 0 ? (
-              <Card>
-                <CardContent className="py-8 text-center">
-                  <p className="text-muted-foreground">
-                    {filters.search
-                      ? `No repositories found matching "${filters.search}"`
-                      : "No repositories found"}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              repositories.map((repo) => (
-                <RepositoryCard
+          {repositories.length === 0 ? (
+            <div className="flex h-[300px] flex-col items-center justify-center gap-2 rounded-xl border text-center">
+              <AlertTriangle className="text-destructive size-12" />
+              <p className="text-muted-foreground">
+                {filters.search
+                  ? `No repositories found matching "${filters.search}"`
+                  : "No repositories found"}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              {repositories.map((repo) => (
+                <RepoCard
                   key={repo.id}
                   repo={repo}
                   isSelected={selectedRepos.includes(repo.full_name)}
                   onToggleSelection={toggleRepoSelection}
                   onDelete={deleteRepository}
                 />
-              ))
-            )}
-          </div>
-
-          <RepositoryPagination
+              ))}
+            </div>
+          )}
+          <RepoPagination
             currentPage={filters.page}
             totalPages={totalPages}
             onPageChange={(page) => handleFilterChange("page", page)}
