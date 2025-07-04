@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { ArrowRightIcon, GithubIcon, ZapIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -26,14 +27,16 @@ export function Hero() {
         operations.
       </p>
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-        <Button
-          size="lg"
-          className="group from-primary to-secondary text-primary-foreground hover:shadow-primary/50 h-12 bg-gradient-to-tr px-8 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl"
-        >
-          <GithubIcon className="h-5 w-5 transition-transform group-hover:scale-110" />
-          Connect with GitHub
-          <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-        </Button>
+        <Link href="/login">
+          <Button
+            size="lg"
+            className="group from-primary to-secondary text-primary-foreground hover:shadow-primary/50 h-12 bg-gradient-to-tr px-8 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          >
+            <GithubIcon className="h-5 w-5 transition-transform group-hover:scale-110" />
+            Get Started
+            <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </Link>
       </div>
     </div>
   )

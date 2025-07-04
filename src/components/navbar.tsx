@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { siteConfig } from "@/config"
-import { Github, GithubIcon } from "lucide-react"
+import { Github, GithubIcon, LogOut, User } from "lucide-react"
 import { HiOutlineMenuAlt4 } from "react-icons/hi"
 
 import { cn } from "@/lib/utils"
@@ -22,6 +23,8 @@ import { ThemeSwitcher } from "./theme-switcher"
 export function Navbar() {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,10 +32,49 @@ export function Navbar() {
     }
 
     window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
   }, [])
 
   const closeSheet = () => setIsSheetOpen(false)
+
+  const handleLogout = () => {
+    router.push("/")
+    closeSheet()
+  }
+
+  const AuthButton = () => {
+    if (isLoggedIn) {
+      return (
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard">
+            <Button variant="outline" size="sm">
+              <User className="h-4 w-4" />
+              Dashboard
+            </Button>
+          </Link>
+          <Button onClick={handleLogout} size="sm" variant="outline">
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+      )
+    }
+
+    return (
+      <Link href="/login">
+        <Button
+          size="sm"
+          className="from-primary to-secondary bg-gradient-to-tr hover:opacity-90"
+        >
+          <Github className="h-4 w-4" />
+          Connect GitHub
+        </Button>
+      </Link>
+    )
+  }
 
   return (
     <nav
@@ -58,13 +100,7 @@ export function Navbar() {
             >
               About
             </Link>
-            <Button
-              size="sm"
-              className="from-primary to-secondary bg-gradient-to-tr hover:opacity-90"
-            >
-              <Github className="h-4 w-4" />
-              Connect GitHub
-            </Button>
+            <AuthButton />
             <ThemeSwitcher />
           </div>
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -99,14 +135,32 @@ export function Navbar() {
                 >
                   About
                 </Link>
-                <div className="pt-6">
-                  <Button
-                    className="from-primary to-secondary w-full bg-gradient-to-tr text-white hover:opacity-90"
-                    onClick={closeSheet}
-                  >
-                    <GithubIcon />
-                    Connect GitHub
-                  </Button>
+                <div className="space-y-2 pt-6">
+                  {isLoggedIn ? (
+                    <>
+                      <Link href="/dashboard" onClick={closeSheet}>
+                        <Button className="w-full" variant="outline">
+                          <User className="h-4 w-4" />
+                          Dashboard
+                        </Button>
+                      </Link>
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <Link href="/login" onClick={closeSheet}>
+                      <Button className="from-primary to-secondary w-full bg-gradient-to-tr text-white hover:opacity-90">
+                        <GithubIcon className="h-4 w-4" />
+                        Connect GitHub
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </div>
             </SheetContent>

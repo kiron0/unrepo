@@ -1,5 +1,5 @@
 import { Success } from "@/components/shared/success"
 
-export function Page() {
+export default function Page() {
   return <Success />
 }

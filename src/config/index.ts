@@ -21,6 +21,19 @@ export const siteConfig = {
   ],
   logo: "/android-chrome-512x512.png",
   ogImage: "/og.png",
+  storage: {
+    TOKEN: "github_token",
+    USER: {
+      CACHE_KEY: "github_user_data",
+      CACHE_EXPIRY_KEY: "github_user_data_expiry",
+      CACHE_DURATION: 60 * 60 * 1000, // 1 hour
+    },
+    REPOS: {
+      CACHE_KEY: "github_repos",
+      CACHE_EXPIRY_KEY: "github_repos_data_expiry",
+      CACHE_DURATION: 60 * 60 * 1000, // 1 hour
+    },
+  },
 }
 
 export type SiteConfig = typeof siteConfig
