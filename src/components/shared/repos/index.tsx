@@ -34,6 +34,7 @@ export function Repos() {
   const [selectedRepos, setSelectedRepos] = useState<string[]>([])
   const [totalPages, setTotalPages] = useState(1)
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const [filters, setFilters] = useState<FilterParams>({
     search: "",
@@ -236,6 +237,11 @@ export function Repos() {
 
   const handleLogout = async () => {
     try {
+      setIsLoggingOut(true)
+
+      setSelectedRepos([])
+      setRepositories([])
+
       await fetch("/api/auth/logout", { method: "POST" }).then((res) => {
         if (res.ok) {
           notifySuccess({
@@ -244,15 +250,11 @@ export function Repos() {
         }
       })
 
-      router.push("/")
-
-      setSelectedRepos([])
-      setRepositories([])
-
       await clearCachedUserData()
       await clearCachedRepositories()
 
       setIsOpen(false)
+      router.push("/")
       router.refresh()
     } catch (error) {
       console.error("Logout error:", error)
@@ -284,6 +286,8 @@ export function Repos() {
   }, [searchParams])
 
   useEffect(() => {
+    if (isLoggingOut) return
+
     const initialFilters = {
       search: "",
       affiliation: "owner",
@@ -296,7 +300,7 @@ export function Repos() {
     } as FilterParams
 
     fetchRepositories(false, initialFilters)
-  }, [fetchRepositories])
+  }, [fetchRepositories, isLoggingOut])
 
   return (
     <div className="container mx-auto p-6">
@@ -408,10 +412,10 @@ export function Repos() {
         </div>
       )}
 
-      {loading ? (
+      {loading || isLoggingOut ? (
         <div className="py-16 text-center">
           <RefreshCw className="mx-auto mb-4 h-8 w-8 animate-spin" />
-          <p>Loading repositories...</p>
+          <p>{isLoggingOut ? "Logging out..." : "Loading repositories..."}</p>
         </div>
       ) : (
         <>
