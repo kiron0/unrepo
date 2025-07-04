@@ -5,53 +5,82 @@ import { useRouter, useSearchParams } from "next/navigation"
 import type { Repository } from "@/types"
 import { getCachedRepositories, setCachedRepositories } from "@/utils/cache"
 import { AlertTriangle, LogOut, RefreshCw, Trash2 } from "lucide-react"
-import { FaStar } from "react-icons/fa"
-import { GoRepoForked } from "react-icons/go"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Card, CardContent } from "@/components/ui/card"
 import { notifyError, notifySuccess } from "@/components/toast"
+
+import { RepositoryCard } from "./repo-card"
+import { RepositoryFilters, type FilterParams } from "./repo-filters"
+import { RepositoryPagination } from "./repo-pagination"
 
 export function Repos() {
   const [repositories, setRepositories] = useState<Repository[]>([])
   const [loading, setLoading] = useState(false)
-  const [deleting, setDeleting] = useState<string | null>(null)
   const [selectedRepos, setSelectedRepos] = useState<string[]>([])
+  const [totalPages, setTotalPages] = useState(1)
+
+  const [filters, setFilters] = useState<FilterParams>({
+    search: "",
+    affiliation: "owner",
+    type: "all",
+    visibility: "all",
+    sort: "updated",
+    direction: "desc",
+    per_page: 30,
+    page: 1,
+  })
 
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const fetchRepositoriesFromAPI = useCallback(async () => {
-    try {
-      const response = await fetch("/api/github/repos")
+  const buildQueryString = useCallback((filterParams: FilterParams) => {
+    const params = new URLSearchParams()
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/login")
-          return null
-        }
-        throw new Error("Failed to fetch repositories")
+    Object.entries(filterParams).forEach(([key, value]) => {
+      if (value && value !== "" && value !== "all") {
+        params.append(key, value.toString())
       }
+    })
 
-      const repos = await response.json()
-      return repos
-    } catch (error) {
-      console.error("Error fetching repositories:", error)
-      notifyError({
-        title: "Error",
-        description: "Failed to fetch repositories",
-      })
-      return null
-    }
-  }, [router])
+    return params.toString()
+  }, [])
+
+  const fetchRepositoriesFromAPI = useCallback(
+    async (filterParams: FilterParams) => {
+      try {
+        const queryString = buildQueryString(filterParams)
+        const response = await fetch(`/api/github/repos?${queryString}`)
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push("/login")
+            return null
+          }
+          throw new Error("Failed to fetch repositories")
+        }
+
+        const repos = await response.json()
+        return repos
+      } catch (error) {
+        console.error("Error fetching repositories:", error)
+        notifyError({
+          title: "Error",
+          description: "Failed to fetch repositories",
+        })
+        return null
+      }
+    },
+    [router, buildQueryString]
+  )
 
   const fetchRepositories = useCallback(
-    async (forceRefresh = false) => {
+    async (forceRefresh = false, newFilters?: FilterParams) => {
       setLoading(true)
       try {
-        if (!forceRefresh) {
+        const currentFilters = newFilters || filters
+
+        if (!forceRefresh && !newFilters) {
           const cachedRepos = getCachedRepositories()
           if (cachedRepos) {
             setRepositories(cachedRepos)
@@ -60,24 +89,51 @@ export function Repos() {
           }
         }
 
-        const repos = await fetchRepositoriesFromAPI()
+        const repos = await fetchRepositoriesFromAPI(currentFilters)
         if (repos) {
           setRepositories(repos)
-          setCachedRepositories(repos)
+          if (!newFilters) {
+            setCachedRepositories(repos)
+          }
+
+          if (repos.length === currentFilters.per_page) {
+            setTotalPages(currentFilters.page + 1)
+          } else {
+            setTotalPages(currentFilters.page)
+          }
         }
       } finally {
         setLoading(false)
       }
     },
-    [fetchRepositoriesFromAPI]
+    [fetchRepositoriesFromAPI, filters]
   )
 
   const refreshRepositories = useCallback(async () => {
-    await fetchRepositories(true)
-  }, [fetchRepositories])
+    await fetchRepositories(true, filters)
+  }, [fetchRepositories, filters])
+
+  const handleFilterChange = useCallback(
+    (key: keyof FilterParams, value: string | number) => {
+      const newFilters = {
+        ...filters,
+        [key]: key === "page" || key === "per_page" ? Number(value) : value,
+        page: key !== "page" ? 1 : Number(value),
+      }
+      setFilters(newFilters)
+      fetchRepositories(true, newFilters)
+    },
+    [filters, fetchRepositories]
+  )
+
+  const handleSearch = useCallback(
+    (searchTerm: string) => {
+      handleFilterChange("search", searchTerm)
+    },
+    [handleFilterChange]
+  )
 
   const deleteRepository = async (fullName: string) => {
-    setDeleting(fullName)
     try {
       const response = await fetch("/api/github/delete", {
         method: "DELETE",
@@ -112,8 +168,6 @@ export function Repos() {
         title: "Error",
         description: "Failed to delete repository",
       })
-    } finally {
-      setDeleting(null)
     }
   }
 
@@ -197,8 +251,8 @@ export function Repos() {
       window.history.replaceState({}, "", "/repos")
     }
 
-    fetchRepositories()
-  }, [searchParams, fetchRepositories])
+    fetchRepositories(false, filters)
+  }, [searchParams, fetchRepositories, filters])
 
   return (
     <div className="container mx-auto p-6">
@@ -224,6 +278,13 @@ export function Repos() {
           </Button>
         </div>
       </div>
+
+      <RepositoryFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onSearch={handleSearch}
+        repositoryCount={repositories.length}
+      />
 
       {selectedRepos.length > 0 && (
         <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
@@ -259,76 +320,37 @@ export function Repos() {
           <p>Loading repositories...</p>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {repositories.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground">No repositories found</p>
-              </CardContent>
-            </Card>
-          ) : (
-            repositories.map((repo) => (
-              <Card key={repo.id} className="transition-shadow hover:shadow-md">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id={`repo-${repo.id}`}
-                        checked={selectedRepos.includes(repo.full_name)}
-                        onCheckedChange={() =>
-                          toggleRepoSelection(repo.full_name)
-                        }
-                        className="mt-2"
-                      />
-                      <div>
-                        <CardTitle className="text-lg">
-                          <a
-                            href={repo.html_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline"
-                          >
-                            {repo.name}
-                          </a>
-                        </CardTitle>
-                        <p className="text-muted-foreground mt-1 text-sm">
-                          {repo.description || "No description"}
-                        </p>
-                        <div className="mt-2 flex items-center gap-4">
-                          {repo.language && (
-                            <Badge variant="secondary">{repo.language}</Badge>
-                          )}
-                          {repo.private && (
-                            <Badge variant="outline">Private</Badge>
-                          )}
-                          <span className="text-muted-foreground flex items-center gap-1 text-sm">
-                            <FaStar className="text-yellow-500" />{" "}
-                            {repo.stargazers_count}
-                          </span>
-                          <span className="text-muted-foreground flex items-center gap-1 text-sm">
-                            <GoRepoForked /> {repo.forks_count}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => deleteRepository(repo.full_name)}
-                      disabled={deleting === repo.full_name}
-                      variant="destructive"
-                      size="sm"
-                    >
-                      {deleting === repo.full_name ? (
-                        <RefreshCw className="animate-spin" />
-                      ) : (
-                        <Trash2 />
-                      )}
-                    </Button>
-                  </div>
-                </CardHeader>
+        <>
+          <div className="grid gap-4">
+            {repositories.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground">
+                    {filters.search
+                      ? `No repositories found matching "${filters.search}"`
+                      : "No repositories found"}
+                  </p>
+                </CardContent>
               </Card>
-            ))
-          )}
-        </div>
+            ) : (
+              repositories.map((repo) => (
+                <RepositoryCard
+                  key={repo.id}
+                  repo={repo}
+                  isSelected={selectedRepos.includes(repo.full_name)}
+                  onToggleSelection={toggleRepoSelection}
+                  onDelete={deleteRepository}
+                />
+              ))
+            )}
+          </div>
+
+          <RepositoryPagination
+            currentPage={filters.page}
+            totalPages={totalPages}
+            onPageChange={(page) => handleFilterChange("page", page)}
+          />
+        </>
       )}
     </div>
   )
