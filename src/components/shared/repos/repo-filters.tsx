@@ -1,6 +1,7 @@
 "use client"
 
-import { Filter, Search } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Filter, Search, SearchIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,6 +38,7 @@ interface RepoFiltersProps {
   onFilterChange: (key: keyof FilterParams, value: string | number) => void
   onSearch: (searchTerm: string) => void
   repositoryCount: number
+  loading?: boolean
 }
 
 export function RepoFilters({
@@ -44,7 +46,14 @@ export function RepoFilters({
   onFilterChange,
   onSearch,
   repositoryCount,
+  loading = false,
 }: RepoFiltersProps) {
+  const [localSearchValue, setLocalSearchValue] = useState(filters.search)
+
+  useEffect(() => {
+    setLocalSearchValue(filters.search)
+  }, [filters.search])
+
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (key === "search" && value) return true
     if (key === "affiliation" && value !== "owner") return true
@@ -82,16 +91,41 @@ export function RepoFilters({
         <div className="space-y-4 px-4">
           <div className="space-y-2">
             <Label htmlFor="search">Search</Label>
-            <div className="relative">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <Input
-                id="search"
-                placeholder="Search by name, description, topics..."
-                value={filters.search}
-                onChange={(e) => onSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                onSearch(localSearchValue)
+              }}
+              className="relative flex gap-2"
+            >
+              <div className="relative flex-1">
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                <Input
+                  id="search"
+                  placeholder="Search by name, description, topics..."
+                  value={localSearchValue}
+                  onChange={(e) => setLocalSearchValue(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              {filters.search && repositoryCount > 0 ? (
+                <Button
+                  variant="destructive"
+                  type="button"
+                  onClick={() => {
+                    setLocalSearchValue("")
+                    onFilterChange("search", "")
+                  }}
+                  disabled={loading}
+                >
+                  Clear
+                </Button>
+              ) : (
+                <Button type="submit" disabled={loading}>
+                  <SearchIcon />
+                </Button>
+              )}
+            </form>
           </div>
 
           <div className="grid grid-cols-1 gap-4 space-y-4 sm:grid-cols-2">

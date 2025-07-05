@@ -12,7 +12,6 @@ export async function GET() {
       )
     }
 
-    // Use the optimized GitHub API client that handles caching, rate limiting, and fetches everything
     const result = await githubAPI.fetchUserWithRepos(accessToken)
 
     if (!result.user) {

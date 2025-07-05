@@ -380,8 +380,12 @@ export function Repos() {
             onFilterChange={handleFilterChange}
             onSearch={handleSearch}
             repositoryCount={repositories.length}
+            loading={loading}
           />
         </div>
+        <p className="text-muted-foreground text-sm">
+          Showing {repositories.length} repositories
+        </p>
       </div>
 
       {selectedRepos.length > 0 && (
