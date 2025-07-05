@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getBaseURL } from "@/utils/base-url"
 import { getAccessToken, setValidGitHubToken } from "@/utils/cookies"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get("code")
   const error = searchParams.get("error")
+
+  const clientUrl = await getBaseURL()
 
   if (error) {
     return NextResponse.redirect(
@@ -22,7 +25,7 @@ export async function GET(request: NextRequest) {
     const token = await getAccessToken(code)
     await setValidGitHubToken(token)
     return NextResponse.redirect(
-      `${process.env.CLIENT_URL || "http://localhost:3000"}/profile`
+      `${clientUrl || "http://localhost:3000"}/profile`
     )
   } catch (err: unknown) {
     console.error(

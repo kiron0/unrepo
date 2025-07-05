@@ -7,6 +7,7 @@ import moment from "moment"
 import { FaStar } from "react-icons/fa"
 import { GoRepoForked } from "react-icons/go"
 
+import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
@@ -41,7 +42,13 @@ export function RepoCard({
   }
 
   return (
-    <Card className="transition-shadow hover:shadow-md">
+    <Card
+      className={cn(
+        "cursor-pointer transition-all hover:shadow-md",
+        isSelected ? "ring-primary ring" : ""
+      )}
+      onClick={() => onToggleSelection(repo.full_name)}
+    >
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
@@ -50,6 +57,7 @@ export function RepoCard({
               checked={isSelected}
               onCheckedChange={() => onToggleSelection(repo.full_name)}
               className="mt-2"
+              onClick={(e) => e.stopPropagation()}
             />
             <div>
               <CardTitle className="text-lg">
@@ -58,6 +66,7 @@ export function RepoCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:underline"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   {repo.name}
                 </a>
@@ -83,19 +92,25 @@ export function RepoCard({
               </p>
             </div>
           </div>
-          <AlertDialogHelper
-            trigger={
-              <Button variant="destructive" size="sm">
-                <Trash2 />
-              </Button>
-            }
-            title={`Delete Repository "${repo.name}"`}
-            description={`This action cannot be undone. The repository "${repo.name}" will be permanently deleted.`}
-            func={() => handleDelete()}
-            disabled={isDeleting}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <AlertDialogHelper
+              trigger={
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Trash2 />
+                </Button>
+              }
+              title={`Delete Repository "${repo.name}"`}
+              description={`This action cannot be undone. The repository "${repo.name}" will be permanently deleted.`}
+              func={() => handleDelete()}
+              disabled={isDeleting}
+              open={isDeleteOpen}
+              setOpen={setIsDeleteOpen}
+            />
+          </div>
         </div>
       </CardHeader>
     </Card>

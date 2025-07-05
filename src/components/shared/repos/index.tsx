@@ -3,23 +3,25 @@
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import type { Repository } from "@/types"
+import type { GitHubUser, Repository } from "@/types"
 import {
   clearCachedRepositories,
   clearCachedUserData,
   getCachedRepositories,
   setCachedRepositories,
+  setCachedUserData,
 } from "@/utils/cache"
+import axios from "axios"
 import {
   AlertTriangle,
-  HouseIcon,
+  ChevronLeftIcon,
   LogOut,
   RefreshCw,
   Search,
   Trash2,
 } from "lucide-react"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AlertDialogHelper } from "@/components/alert-dialog-helper"
 import { notifyError, notifySuccess } from "@/components/toast"
@@ -34,6 +36,7 @@ export function Repos() {
   const [selectedRepos, setSelectedRepos] = useState<string[]>([])
   const [totalPages, setTotalPages] = useState(1)
   const [isOpen, setIsOpen] = useState(false)
+  const [isBatchOpen, setIsBatchOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const [filters, setFilters] = useState<FilterParams>({
@@ -49,6 +52,15 @@ export function Repos() {
 
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  const updateCachedUserDataAfterDeletion = useCallback(async () => {
+    try {
+      const result = await axios.get<GitHubUser>("/api/github/user")
+      setCachedUserData(result?.data)
+    } catch (error) {
+      console.error("Error fetching updated user data:", error)
+    }
+  }, [])
 
   const buildQueryString = useCallback((filterParams: FilterParams) => {
     const params = new URLSearchParams()
@@ -68,14 +80,6 @@ export function Repos() {
         const queryString = buildQueryString(filterParams)
         const response = await fetch(`/api/github/repos?${queryString}`)
 
-        if (!response.ok) {
-          if (response.status === 401) {
-            router.push("/login")
-            return null
-          }
-          throw new Error("Failed to fetch repositories")
-        }
-
         const repos = await response.json()
         return repos
       } catch (error) {
@@ -87,7 +91,7 @@ export function Repos() {
         return null
       }
     },
-    [router, buildQueryString]
+    [buildQueryString]
   )
 
   const fetchRepositories = useCallback(
@@ -161,24 +165,20 @@ export function Repos() {
         body: JSON.stringify({ fullRepoName: fullName }),
       })
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/login")
-          return
-        }
-        throw new Error("Failed to delete repository")
+      if (response.ok) {
+        const updatedRepos = repositories.filter(
+          (repo) => repo.full_name !== fullName
+        )
+        setRepositories(updatedRepos)
+        setCachedRepositories(updatedRepos)
+
+        updateCachedUserDataAfterDeletion()
+
+        notifySuccess({
+          title: "Success",
+          description: `Repository ${fullName} deleted successfully`,
+        })
       }
-
-      const updatedRepos = repositories.filter(
-        (repo) => repo.full_name !== fullName
-      )
-      setRepositories(updatedRepos)
-      setCachedRepositories(updatedRepos)
-
-      notifySuccess({
-        title: "Success",
-        description: `Repository ${fullName} deleted successfully`,
-      })
     } catch (error) {
       console.error("Error deleting repository:", error)
       notifyError({
@@ -191,11 +191,6 @@ export function Repos() {
   const batchDeleteRepositories = async () => {
     if (selectedRepos.length === 0) return
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${selectedRepos.length} repositories? This action cannot be undone.`
-    )
-    if (!confirmed) return
-
     try {
       const response = await fetch("/api/github/batch-delete", {
         method: "DELETE",
@@ -205,27 +200,25 @@ export function Repos() {
         body: JSON.stringify({ repoNames: selectedRepos }),
       })
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/login")
-          return
-        }
-        throw new Error("Failed to delete repositories")
+      if (response.ok) {
+        setIsBatchOpen(false)
+        const result = await response.json()
+
+        const updatedRepos = repositories.filter(
+          (repo) => !result.results.successful.includes(repo.full_name)
+        )
+        setRepositories(updatedRepos)
+        setCachedRepositories(updatedRepos)
+        setSelectedRepos([])
+        setTotalPages(Math.ceil(updatedRepos.length / filters.per_page))
+
+        updateCachedUserDataAfterDeletion()
+
+        notifySuccess({
+          title: "Batch Delete Complete",
+          description: result.message,
+        })
       }
-
-      const result = await response.json()
-
-      const updatedRepos = repositories.filter(
-        (repo) => !result.results.successful.includes(repo.full_name)
-      )
-      setRepositories(updatedRepos)
-      setCachedRepositories(updatedRepos)
-      setSelectedRepos([])
-
-      notifySuccess({
-        title: "Batch Delete Complete",
-        description: result.message,
-      })
     } catch (error) {
       console.error("Error batch deleting repositories:", error)
       notifyError({
@@ -304,14 +297,20 @@ export function Repos() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6 flex flex-col items-center justify-between gap-5 md:flex-row">
-        <div>
-          <h3 className="text-3xl font-bold">GitHub Repositories</h3>
+      <div className="mb-6 flex flex-col items-center gap-5 md:flex-row md:justify-between">
+        <div className="w-full">
+          <Link
+            href="/"
+            className="from-primary to-secondary flex items-center gap-2 bg-gradient-to-tr bg-clip-text text-3xl font-bold text-transparent"
+          >
+            <ChevronLeftIcon className="text-muted-foreground" />
+            GitHub Repositories
+          </Link>
           <p className="text-muted-foreground">
             Manage and clean up your repositories
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full justify-end gap-2">
           <Button
             onClick={refreshRepositories}
             disabled={loading}
@@ -319,9 +318,6 @@ export function Repos() {
           >
             <RefreshCw className={loading ? "animate-spin" : ""} />
           </Button>
-          <Link href="/" className={buttonVariants({ variant: "outline" })}>
-            <HouseIcon className="h-4 w-4" />
-          </Link>
           <AlertDialogHelper
             trigger={
               <Button className="w-full" variant="destructive">
@@ -403,14 +399,19 @@ export function Repos() {
                   ? "Deselect All"
                   : "Select All"}
               </Button>
-              <Button
-                onClick={batchDeleteRepositories}
-                variant="destructive"
-                size="sm"
-              >
-                <Trash2 />
-                Delete Selected
-              </Button>
+              <AlertDialogHelper
+                trigger={
+                  <Button variant="destructive" size="sm">
+                    <Trash2 />
+                    Delete Selected
+                  </Button>
+                }
+                title="Are you sure you want to delete selected repositories?"
+                description={`This action cannot be undone. ${selectedRepos.length} repositories will be permanently deleted.`}
+                func={() => batchDeleteRepositories()}
+                open={isBatchOpen}
+                setOpen={setIsBatchOpen}
+              />
             </div>
           </div>
         </div>

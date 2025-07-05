@@ -78,7 +78,7 @@ export function RepoFilters({
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full max-w-xs">
+      <SheetContent className="w-[90%] md:w-full">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />

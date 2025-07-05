@@ -138,11 +138,18 @@ export class GitHubAPIClient {
       publicRepoCount: number
     }
   }> {
-    // Fetch user and repos in parallel for better performance
     const [user, repos] = await Promise.all([
       this.fetchUser(token),
       this.fetchUserRepos(token),
     ])
+
+    if (!user || repos.length === 0) {
+      return {
+        user: null,
+        repos: [],
+        stats: { privateRepoCount: 0, totalOwnedRepos: 0, publicRepoCount: 0 },
+      }
+    }
 
     const stats = {
       privateRepoCount: 0,

@@ -6,7 +6,7 @@ export async function middleware(req: NextRequest) {
 
   const path = req.nextUrl.pathname
 
-  if (!token && (path.startsWith("/repos") || path.startsWith("/success"))) {
+  if (!token && (path.startsWith("/repos") || path.startsWith("/profile"))) {
     return NextResponse.redirect(new URL("/login", req.nextUrl))
   }
 
