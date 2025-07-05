@@ -23,7 +23,17 @@ export function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <Card className="mx-3 w-full max-w-md">
+      <Card className="relative mx-3 w-full max-w-xl">
+        <Link
+          href="/"
+          className={buttonVariants({
+            size: "sm",
+            variant: "outline",
+            className: "absolute top-4 left-4",
+          })}
+        >
+          <ChevronLeftIcon />
+        </Link>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
             Welcome to RemoveIt
@@ -34,7 +44,7 @@ export function Login() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col items-center gap-2">
-            <Button size="sm" onClick={handleGitHubLogin} disabled={isLoading}>
+            <Button onClick={handleGitHubLogin} disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="animate-spin" />
@@ -47,16 +57,6 @@ export function Login() {
                 </>
               )}
             </Button>
-            <span className="text-muted-foreground text-sm">or </span>
-            <Link
-              href="/"
-              className={buttonVariants({
-                size: "sm",
-                variant: "outline",
-              })}
-            >
-              <ChevronLeftIcon /> Back to Home
-            </Link>
           </div>
 
           <div className="text-muted-foreground text-center text-sm">

@@ -3,9 +3,17 @@ export interface GitHubUser {
   login: string
   name?: string
   bio?: string
+  private_repos_count?: number
+  total_owned_repos?: number
+  public_repos_count?: number
   public_repos: number
   followers: number
   following: number
+}
+
+export interface GitHubRepo {
+  private: boolean
+  owner: { login: string }
 }
 
 export interface Repository {

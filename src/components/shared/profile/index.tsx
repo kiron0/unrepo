@@ -12,9 +12,10 @@ import { ChevronLeftIcon } from "lucide-react"
 import { GoRepo } from "react-icons/go"
 import { TiWarning } from "react-icons/ti"
 
+import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
-function SuccessSuspense() {
+function ProfileSuspense() {
   const [user, setUser] = React.useState<GitHubUser | null>(null)
   const [loading, setLoading] = React.useState(true)
   const searchParams = useSearchParams()
@@ -44,12 +45,7 @@ function SuccessSuspense() {
       }
 
       try {
-        const { data } = await axios.get<GitHubUser>(
-          "https://api.github.com/user",
-          {
-            headers: { Authorization: `Bearer ${authToken}` },
-          }
-        )
+        const { data } = await axios.get<GitHubUser>("/api/github/user")
         setUser(data)
         setCachedUserData(data)
         setLoading(false)
@@ -103,8 +99,17 @@ function SuccessSuspense() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-lg transform rounded-3xl border p-6 shadow-lg transition-all md:p-8">
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="relative w-full max-w-lg transform rounded-3xl border p-4 shadow-lg transition-all md:p-6">
+        <Link
+          href="/"
+          className={buttonVariants({
+            variant: "outline",
+            className: "absolute top-4 left-4",
+          })}
+        >
+          <ChevronLeftIcon />
+        </Link>
         <div className="flex flex-col items-center text-center">
           <div className="mb-8">
             <Image
@@ -124,9 +129,12 @@ function SuccessSuspense() {
               </p>
             )}
           </div>
-          <div className="mb-8 grid w-full grid-cols-2 gap-4 md:grid-cols-3">
+          <div className="mb-6 grid w-full grid-cols-3 gap-2 md:gap-4">
             {[
-              { value: user.public_repos, label: "Repositories" },
+              {
+                value: user.total_owned_repos || user.public_repos,
+                label: "Total Repos",
+              },
               { value: user.followers, label: "Followers" },
               { value: user.following, label: "Following" },
             ].map(({ value, label }) => (
@@ -141,6 +149,33 @@ function SuccessSuspense() {
               </div>
             ))}
           </div>
+
+          {user.private_repos_count !== undefined && (
+            <div className="mb-6 grid w-full grid-cols-2 gap-2 md:gap-4">
+              {[
+                {
+                  value: user.public_repos_count || user.public_repos,
+                  label: "Public",
+                  color: "text-green-600",
+                },
+                {
+                  value: user.private_repos_count,
+                  label: "Private",
+                  color: "text-orange-600",
+                },
+              ].map(({ value, label, color }) => (
+                <div
+                  key={label}
+                  className="bg-muted border-muted transform rounded-lg border p-3 transition-all duration-300 hover:bg-transparent"
+                >
+                  <p className={cn("text-lg font-bold", color)}>{value}</p>
+                  <p className="text-muted-foreground text-center text-xs">
+                    {label} Repos
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex w-full flex-col items-center gap-4">
             <Link
               href="/repos"
@@ -152,14 +187,6 @@ function SuccessSuspense() {
               <GoRepo />
               View Your Repositories
             </Link>
-            <Link
-              href="/"
-              className={buttonVariants({
-                variant: "outline",
-              })}
-            >
-              <ChevronLeftIcon /> Return Home
-            </Link>
           </div>
         </div>
       </div>
@@ -167,7 +194,7 @@ function SuccessSuspense() {
   )
 }
 
-export function Success() {
+export function Profile() {
   return (
     <React.Suspense
       fallback={
@@ -178,7 +205,7 @@ export function Success() {
         </div>
       }
     >
-      <SuccessSuspense />
+      <ProfileSuspense />
     </React.Suspense>
   )
 }

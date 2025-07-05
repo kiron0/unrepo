@@ -124,6 +124,11 @@ export function UserDropdown({
               </div>
             </div>
           </DropdownMenuLabel>
+          <Link href="/profile">
+            <DropdownMenuItem className="flex cursor-pointer items-center gap-2 py-3">
+              <UserIcon /> Profile
+            </DropdownMenuItem>
+          </Link>
           <Link href="/repos">
             <DropdownMenuItem className="flex cursor-pointer items-center gap-2 py-3">
               <GoRepo /> Repositories

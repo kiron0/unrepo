@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     await setGitHubToken(token)
 
     const clientURL = process.env.CLIENT_URL || "http://localhost:3000"
-    return NextResponse.redirect(`${clientURL}/success?token=${token}`)
+    return NextResponse.redirect(`${clientURL}/profile?token=${token}`)
   } catch (err: any) {
     console.error("GitHub Token Error:", err.response?.data || err.message)
     return NextResponse.json(
