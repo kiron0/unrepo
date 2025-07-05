@@ -17,6 +17,7 @@ import { GoRepo } from "react-icons/go"
 import { TiWarning } from "react-icons/ti"
 
 import { cn } from "@/lib/utils"
+import { useRemoveTokenFromUrl } from "@/hooks/use-cleanup-query-params"
 import { buttonVariants } from "@/components/ui/button"
 
 function ProfileSuspense() {
@@ -26,8 +27,11 @@ function ProfileSuspense() {
   const [loadingMessage, setLoadingMessage] = React.useState(
     "Connecting to GitHub..."
   )
+  const [tokenProcessed, setTokenProcessed] = React.useState(false)
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
+
+  useRemoveTokenFromUrl(tokenProcessed && !!user)
 
   React.useEffect(() => {
     const fetchUserData = async () => {
@@ -35,6 +39,7 @@ function ProfileSuspense() {
       if (cachedUser) {
         setUser(cachedUser)
         setLoading(false)
+        setTokenProcessed(true)
         return
       }
 
@@ -49,7 +54,6 @@ function ProfileSuspense() {
         return
       }
 
-      // Validate and set token in cookies only if it's valid
       if (token) {
         setLoadingMessage("Validating GitHub token...")
         const tokenSet = await setValidGitHubToken(token)
@@ -58,12 +62,15 @@ function ProfileSuspense() {
           setLoading(false)
           return
         }
+        setTokenProcessed(true)
+      } else {
+        // Token is already in cookies, mark as processed
+        setTokenProcessed(true)
       }
 
       setLoadingMessage("Fetching user details...")
       try {
         const { data } = await axios.get<GitHubUser>("/api/github/user")
-        console.log("Fetched user data:", data)
         setUser(data)
         setCachedUserData(data)
         setError(null)
@@ -71,9 +78,7 @@ function ProfileSuspense() {
       } catch (err: any) {
         console.error("Error fetching user:", err)
 
-        // If there's an authentication error, clear the invalid token
         if (err.response?.status === 401 || err.response?.status === 403) {
-          console.log("Authentication failed, clearing token from cookies")
           await removeGitHubToken()
           setError("Authentication failed. Please login again.")
         } else {
