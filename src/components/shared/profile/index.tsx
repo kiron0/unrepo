@@ -6,7 +6,11 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import type { GitHubUser } from "@/types"
 import { getCachedUserData, setCachedUserData } from "@/utils/cache"
-import { getGitHubToken, setGitHubToken } from "@/utils/cookies"
+import {
+  getGitHubToken,
+  removeGitHubToken,
+  setValidGitHubToken,
+} from "@/utils/cookies"
 import axios from "axios"
 import { ChevronLeftIcon } from "lucide-react"
 import { GoRepo } from "react-icons/go"
@@ -18,6 +22,10 @@ import { buttonVariants } from "@/components/ui/button"
 function ProfileSuspense() {
   const [user, setUser] = React.useState<GitHubUser | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+  const [loadingMessage, setLoadingMessage] = React.useState(
+    "Connecting to GitHub..."
+  )
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
 
@@ -36,21 +44,42 @@ function ProfileSuspense() {
       }
 
       if (!authToken) {
+        setError("No authentication token found")
         setLoading(false)
         return
       }
 
+      // Validate and set token in cookies only if it's valid
       if (token) {
-        await setGitHubToken(token)
+        setLoadingMessage("Validating GitHub token...")
+        const tokenSet = await setValidGitHubToken(token)
+        if (!tokenSet) {
+          setError("Invalid GitHub token provided")
+          setLoading(false)
+          return
+        }
       }
 
+      setLoadingMessage("Fetching user details...")
       try {
         const { data } = await axios.get<GitHubUser>("/api/github/user")
+        console.log("Fetched user data:", data)
         setUser(data)
         setCachedUserData(data)
+        setError(null)
         setLoading(false)
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching user:", err)
+
+        // If there's an authentication error, clear the invalid token
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          console.log("Authentication failed, clearing token from cookies")
+          await removeGitHubToken()
+          setError("Authentication failed. Please login again.")
+        } else {
+          setError("Failed to fetch user data. Please try again.")
+        }
+
         setLoading(false)
       }
     }
@@ -63,9 +92,7 @@ function ProfileSuspense() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4 p-8">
           <div className="border-t-primary border-muted h-12 w-12 animate-spin rounded-full border-4" />
-          <p className="animate-pulse text-lg font-medium">
-            Connecting to GitHub...
-          </p>
+          <p className="animate-pulse text-lg font-medium">{loadingMessage}</p>
         </div>
       </div>
     )
@@ -79,10 +106,11 @@ function ProfileSuspense() {
             <TiWarning />
           </div>
           <h1 className="mb-3 text-3xl font-extrabold">
-            Authentication Failed
+            {error ? "Authentication Error" : "Authentication Failed"}
           </h1>
           <p className="text-muted-foreground mb-6 leading-relaxed">
-            Unable to connect to your GitHub account. Please try again.
+            {error ||
+              "Unable to connect to your GitHub account. Please try again."}
           </p>
           <Link
             href="/"

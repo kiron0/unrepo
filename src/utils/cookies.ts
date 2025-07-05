@@ -71,3 +71,37 @@ export async function removeGitHubToken(): Promise<boolean> {
     return false
   }
 }
+
+/**
+ * Validate GitHub token by making a test API call
+ */
+export async function validateGitHubToken(token: string): Promise<boolean> {
+  try {
+    const response = await axios.get("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    })
+    return response.status === 200
+  } catch (error) {
+    console.error("Token validation failed:", error)
+    return false
+  }
+}
+
+/**
+ * Set GitHub token in cookies only if it's valid
+ */
+export async function setValidGitHubToken(token: string): Promise<boolean> {
+  try {
+    const isValid = await validateGitHubToken(token)
+    if (isValid) {
+      return await setGitHubToken(token)
+    }
+    return false
+  } catch (error) {
+    console.error("Error setting valid GitHub token:", error)
+    return false
+  }
+}
