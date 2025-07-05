@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ChevronLeftIcon, Github, Loader2 } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { AlertCircle, ChevronLeftIcon, Github, Loader2 } from "lucide-react"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -15,9 +16,21 @@ import {
 
 export function Login() {
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const errorParam = searchParams.get("error")
+    if (errorParam === "auth_failed") {
+      setError("Authentication failed. Please try again.")
+    } else if (errorParam === "access_denied") {
+      setError("Access denied. Please allow access to continue.")
+    }
+  }, [searchParams])
 
   const handleGitHubLogin = () => {
     setIsLoading(true)
+    setError(null)
     window.location.href = "/api/auth/login"
   }
 
@@ -43,6 +56,13 @@ export function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {error && (
+            <div className="bg-destructive/10 border-destructive/20 text-destructive flex items-center gap-2 rounded-lg border p-3 text-sm">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </div>
+          )}
+
           <div className="flex flex-col items-center gap-2">
             <Button onClick={handleGitHubLogin} disabled={isLoading}>
               {isLoading ? (

@@ -6,13 +6,17 @@ export async function middleware(req: NextRequest) {
 
   const path = req.nextUrl.pathname
 
-  if (!token && (path.startsWith("/repos") || path.startsWith("/profile"))) {
+  if (!token && (path.startsWith("/repos") || path.startsWith("/success"))) {
     return NextResponse.redirect(new URL("/login", req.nextUrl))
+  }
+
+  if (token && path === "/login") {
+    return NextResponse.redirect(new URL("/profile", req.nextUrl))
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/repos", "/profile"],
+  matcher: ["/repos", "/login", "/profile"],
 }

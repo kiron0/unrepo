@@ -3,21 +3,14 @@
 import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
 import type { GitHubUser } from "@/types"
 import { getCachedUserData, setCachedUserData } from "@/utils/cache"
-import {
-  getGitHubToken,
-  removeGitHubToken,
-  setValidGitHubToken,
-} from "@/utils/cookies"
 import axios from "axios"
 import { ChevronLeftIcon } from "lucide-react"
 import { GoRepo } from "react-icons/go"
 import { TiWarning } from "react-icons/ti"
 
 import { cn } from "@/lib/utils"
-import { useRemoveTokenFromUrl } from "@/hooks/use-cleanup-query-params"
 import { buttonVariants } from "@/components/ui/button"
 
 function ProfileSuspense() {
@@ -27,11 +20,6 @@ function ProfileSuspense() {
   const [loadingMessage, setLoadingMessage] = React.useState(
     "Connecting to GitHub..."
   )
-  const [tokenProcessed, setTokenProcessed] = React.useState(false)
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token")
-
-  useRemoveTokenFromUrl(tokenProcessed && !!user)
 
   React.useEffect(() => {
     const fetchUserData = async () => {
@@ -39,58 +27,24 @@ function ProfileSuspense() {
       if (cachedUser) {
         setUser(cachedUser)
         setLoading(false)
-        setTokenProcessed(true)
         return
-      }
-
-      let authToken = token
-      if (!authToken) {
-        authToken = await getGitHubToken()
-      }
-
-      if (!authToken) {
-        setError("No authentication token found")
-        setLoading(false)
-        return
-      }
-
-      if (token) {
-        setLoadingMessage("Validating GitHub token...")
-        const tokenSet = await setValidGitHubToken(token)
-        if (!tokenSet) {
-          setError("Invalid GitHub token provided")
-          setLoading(false)
-          return
-        }
-        setTokenProcessed(true)
-      } else {
-        // Token is already in cookies, mark as processed
-        setTokenProcessed(true)
       }
 
       setLoadingMessage("Fetching user details...")
       try {
-        const { data } = await axios.get<GitHubUser>("/api/github/user")
-        setUser(data)
-        setCachedUserData(data)
+        const result = await axios.get<GitHubUser>("/api/github/user")
+        setUser(result?.data)
+        setCachedUserData(result?.data)
         setError(null)
         setLoading(false)
       } catch (err: any) {
         console.error("Error fetching user:", err)
-
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          await removeGitHubToken()
-          setError("Authentication failed. Please login again.")
-        } else {
-          setError("Failed to fetch user data. Please try again.")
-        }
-
         setLoading(false)
       }
     }
 
     fetchUserData()
-  }, [token])
+  }, [])
 
   if (loading) {
     return (
