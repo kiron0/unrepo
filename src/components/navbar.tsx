@@ -32,7 +32,7 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
 
   const AuthButton = () => {
     if (isLoggedIn) {
-      return <UserDropdown contentClassName="mr-2 lg:mr-0 mt-2 sm:mt-2" />
+      return <UserDropdown contentClassName="mr-4 md:mr-0 mt-2 md:mt-3" />
     }
 
     return (
