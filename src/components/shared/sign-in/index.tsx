@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { siteConfig } from "@/config"
@@ -15,21 +15,26 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export function SignIn() {
+const errorMessages: Record<string, string> = {
+  auth_failed: "Authentication failed. Please try again.",
+  access_denied: "Access denied. Please allow access to continue.",
+  bad_credentials: "Invalid credentials. Please log in again.",
+  access_token_missing: "Access token is missing. Please log in again.",
+  authentication_required: "Authentication required. Please log in.",
+  server_error: "Server error. Please try again later.",
+}
+
+function SignInSuspense() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
 
   useEffect(() => {
     const errorParam = searchParams.get("error")
-    if (errorParam === "auth_failed") {
-      setError("Authentication failed. Please try again.")
-    } else if (errorParam === "access_denied") {
-      setError("Access denied. Please allow access to continue.")
-    } else if (errorParam === "bad_credentials") {
-      setError("Invalid credentials. Please log in again.")
-    } else if (errorParam === "access_token_missing") {
-      setError("Access token is missing. Please log in again.")
+    if (errorParam) {
+      const message = errorMessages[errorParam] || "An unknown error occurred."
+      setError(message)
+      setIsLoading(false)
     } else {
       setError(null)
     }
@@ -38,7 +43,8 @@ export function SignIn() {
   const handleGitHubLogin = () => {
     setIsLoading(true)
     setError(null)
-    window.location.href = "/api/auth/sign-in"
+    const authUrl = `/api/auth/sign-in`
+    window.location.href = authUrl
   }
 
   return (
@@ -103,5 +109,19 @@ export function SignIn() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export function SignIn() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="border-t-primary border-muted h-12 w-12 animate-spin rounded-full border-4" />
+        </div>
+      }
+    >
+      <SignInSuspense />
+    </Suspense>
   )
 }

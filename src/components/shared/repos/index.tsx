@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { Suspense, useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { GitHubUser, Repository } from "@/types"
@@ -30,7 +30,7 @@ import { RepoCard } from "./repo-card"
 import { RepoFilters, type FilterParams } from "./repo-filters"
 import { RepoPagination } from "./repo-pagination"
 
-export function Repos() {
+function ReposSuspense() {
   const [repositories, setRepositories] = useState<Repository[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedRepos, setSelectedRepos] = useState<string[]>([])
@@ -86,42 +86,28 @@ export function Repos() {
     async (filterParams: FilterParams) => {
       try {
         const queryString = buildQueryString(filterParams)
-        const response = await fetch(`/api/github/repos?${queryString}`)
+        const response = await axios.get(`/api/github/repos?${queryString}`)
 
-        if (!response.ok) {
-          let errorData
-          try {
-            errorData = await response.json()
-          } catch {
-            errorData = { error: "Unknown error" }
-          }
-
-          // Handle authentication errors
-          if (response.status === 401 && errorData.redirectTo) {
-            window.location.href = errorData.redirectTo
-            return []
-          }
-
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const repos = await response.json()
-
-        if (Array.isArray(repos)) {
-          return repos
+        if (Array.isArray(response.data)) {
+          return response.data
         } else {
           return []
         }
-      } catch (error) {
-        console.error("Error fetching repositories:", error)
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          router.push("/sign-in?error=authentication_required")
+          return []
+        }
+
         notifyError({
           title: "Error",
-          description: "Failed to fetch repositories",
+          description:
+            error.response?.data?.error || "Failed to fetch repositories",
         })
         return []
       }
     },
-    [buildQueryString]
+    [buildQueryString, router]
   )
 
   const fetchRepositories = useCallback(
@@ -196,15 +182,11 @@ export function Repos() {
 
   const deleteRepository = async (fullName: string) => {
     try {
-      const response = await fetch("/api/github/delete", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ fullRepoName: fullName }),
+      const response = await axios.delete("/api/github/delete", {
+        data: { fullRepoName: fullName },
       })
 
-      if (response.ok) {
+      if (response.status === 200) {
         const updatedRepos = repositories.filter(
           (repo) => repo.full_name !== fullName
         )
@@ -231,17 +213,13 @@ export function Repos() {
     if (selectedRepos.length === 0) return
 
     try {
-      const response = await fetch("/api/github/batch-delete", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ repoNames: selectedRepos }),
+      const response = await axios.delete("/api/github/batch-delete", {
+        data: { repoNames: selectedRepos },
       })
 
-      if (response.ok) {
+      if (response.status === 200) {
         setIsBatchOpen(false)
-        const result = await response.json()
+        const result = response.data
 
         const updatedRepos = repositories.filter(
           (repo) => !result.results.successful.includes(repo.full_name)
@@ -274,8 +252,8 @@ export function Repos() {
       setSelectedRepos([])
       setRepositoriesSafe([])
 
-      await fetch("/api/auth/sign-out", { method: "POST" }).then((res) => {
-        if (res.ok) {
+      await axios.post("/api/auth/sign-out").then((res) => {
+        if (res.status === 200) {
           notifySuccess({
             description: "You have been logged out successfully.",
           })
@@ -502,5 +480,19 @@ export function Repos() {
         </>
       )}
     </div>
+  )
+}
+
+export function Repos() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="border-t-primary border-muted h-12 w-12 animate-spin rounded-full border-4" />
+        </div>
+      }
+    >
+      <ReposSuspense />
+    </Suspense>
   )
 }
