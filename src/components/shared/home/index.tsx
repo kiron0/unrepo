@@ -1,14 +1,14 @@
-import { getGitHubToken } from "@/utils/cookies"
-
 import { Footer } from "@/components/footer"
 import { Navbar } from "@/components/navbar"
 import { Features } from "@/components/shared/home/features"
 import { Hero } from "@/components/shared/home/hero"
 import { WhyChoose } from "@/components/shared/home/why-choose"
 
-export async function Home() {
-  const isLoggedIn = (await getGitHubToken()) !== null
+interface HomeProps {
+  isLoggedIn: string | null
+}
 
+export async function Home({ isLoggedIn }: HomeProps) {
   return (
     <section className="min-h-screen">
       <Navbar isLoggedIn={isLoggedIn} />

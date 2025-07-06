@@ -7,7 +7,7 @@ import { GoRepo } from "react-icons/go"
 import { buttonVariants } from "@/components/ui/button"
 
 interface HeroProps {
-  isLoggedIn: boolean
+  isLoggedIn: string | null
 }
 
 export function Hero({ isLoggedIn }: HeroProps) {

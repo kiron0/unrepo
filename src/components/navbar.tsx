@@ -13,7 +13,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher"
 import { UserDropdown } from "@/components/user-dropdown"
 
 interface NavbarProps {
-  isLoggedIn: boolean
+  isLoggedIn: string | null
 }
 
 export function Navbar({ isLoggedIn }: NavbarProps) {

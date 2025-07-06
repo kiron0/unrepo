@@ -1,5 +1,4 @@
 import { siteConfig } from "@/config"
-import { getGitHubToken } from "@/utils/cookies"
 import { ShieldIcon } from "lucide-react"
 
 import { Footer } from "@/components/footer"
@@ -8,9 +7,11 @@ import { Developer } from "@/components/shared/about/developer"
 import { Features } from "@/components/shared/about/features"
 import { Mission } from "@/components/shared/about/mission"
 
-export async function About() {
-  const isLoggedIn = (await getGitHubToken()) !== null
+interface AboutProps {
+  isLoggedIn: string | null
+}
 
+export async function About({ isLoggedIn }: AboutProps) {
   return (
     <section className="min-h-screen">
       <Navbar isLoggedIn={isLoggedIn} />
