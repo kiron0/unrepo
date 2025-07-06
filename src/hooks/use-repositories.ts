@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { GitHubUser, Repository } from "@/types"
 import { clearCachedUserData, setCachedUserData } from "@/utils/cache"
@@ -67,7 +67,6 @@ export function useRepositories() {
       ? (directionParam as FilterParams["direction"])
       : "desc"
 
-    // Validate per_page to only allowed values
     const allowedPerPageValues: FilterParams["per_page"][] = [
       10, 25, 30, 50, 100,
     ]
@@ -89,7 +88,6 @@ export function useRepositories() {
     }
   }, [searchParams])
 
-  // Initialize with default filters, will be updated from URL in useEffect
   const [filters, setFilters] = useState<FilterParams>({
     search: "",
     affiliation: "owner",
@@ -101,6 +99,7 @@ export function useRepositories() {
   })
 
   const [isInitialized, setIsInitialized] = useState(false)
+  const userInitiatedChange = useRef(false)
 
   const updateCachedUserDataAfterDeletion = useCallback(async () => {
     try {
@@ -115,7 +114,6 @@ export function useRepositories() {
     (filterParams: FilterParams) => {
       const params = new URLSearchParams()
 
-      // Only add non-default values to the URL
       if (filterParams.search) params.set("search", filterParams.search)
       if (filterParams.affiliation !== "owner")
         params.set("affiliation", filterParams.affiliation)
@@ -187,7 +185,6 @@ export function useRepositories() {
     async (currentFilters: FilterParams) => {
       setLoading(true)
       try {
-        // Always fetch fresh data for each request
         const repos = await fetchRepositoriesFromAPI(currentFilters)
 
         if (repos && Array.isArray(repos)) {
@@ -216,11 +213,9 @@ export function useRepositories() {
     (key: keyof FilterParams, value: string | number) => {
       let processedValue: string | number = value
 
-      // Validate and sanitize values
       if (key === "page" || key === "per_page") {
         processedValue = Number(value)
         if (key === "per_page") {
-          // Validate per_page to only allowed values
           const allowedPerPageValues: FilterParams["per_page"][] = [
             10, 25, 30, 50, 100,
           ]
@@ -237,6 +232,8 @@ export function useRepositories() {
         [key]: processedValue,
         page: key !== "page" ? 1 : Number(processedValue),
       }
+
+      userInitiatedChange.current = true
       setFilters(newFilters)
       updateURLWithFilters(newFilters)
       fetchRepositories(newFilters)
@@ -249,9 +246,10 @@ export function useRepositories() {
       const newFilters = {
         ...filters,
         ...updates,
-        // Reset page to 1 unless page is explicitly being updated
         page: updates.page !== undefined ? updates.page : 1,
       }
+
+      userInitiatedChange.current = true
       setFilters(newFilters)
       updateURLWithFilters(newFilters)
       fetchRepositories(newFilters)
@@ -387,10 +385,12 @@ export function useRepositories() {
       per_page: 30,
       page: 1,
     }
+
+    userInitiatedChange.current = true
     setFilters(defaultFilters)
     updateURLWithFilters(defaultFilters)
     fetchRepositories(defaultFilters)
-  }, [updateURLWithFilters, fetchRepositories])
+  }, [fetchRepositories, updateURLWithFilters])
 
   useEffect(() => {
     const tokenFromUrl = searchParams.get("token")
@@ -401,16 +401,13 @@ export function useRepositories() {
 
     if (isLoggingOut) return
 
-    // Initialize filters from URL on first load
     if (!isInitialized) {
       const urlFilters = getFiltersFromURL()
       setFilters(urlFilters)
       setIsInitialized(true)
       fetchRepositories(urlFilters)
-    } else {
-      // Handle URL changes after initialization (browser back/forward)
+    } else if (!userInitiatedChange.current) {
       const urlFilters = getFiltersFromURL()
-      // Only update if filters actually changed to avoid infinite loops
       const filtersChanged =
         JSON.stringify(filters) !== JSON.stringify(urlFilters)
       if (filtersChanged) {
@@ -418,12 +415,14 @@ export function useRepositories() {
         fetchRepositories(urlFilters)
       }
     }
+
+    userInitiatedChange.current = false
   }, [
     searchParams,
     isLoggingOut,
+    isInitialized,
     getFiltersFromURL,
     fetchRepositories,
-    isInitialized,
     filters,
   ])
 
