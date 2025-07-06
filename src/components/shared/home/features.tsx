@@ -40,7 +40,7 @@ export function Features() {
       {featureList.map((feature, i) => (
         <Card
           key={i}
-          className="group bg-card/60 hover:shadow-primary/10 relative overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-xl"
+          className="group bg-card/60 hover:shadow-primary/10 relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
         >
           <div className="from-primary/5 to-secondary/10 absolute inset-0 bg-gradient-to-r opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           <CardHeader className="pb-4">

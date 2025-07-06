@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { AlertCircle, ChevronLeftIcon, Github, Loader2 } from "lucide-react"
+import { siteConfig } from "@/config"
+import { AlertCircle, ChevronLeftIcon, GithubIcon, Loader2 } from "lucide-react"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -49,7 +50,10 @@ export function Login() {
         </Link>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
-            Welcome to RemoveIt
+            Welcome to{" "}
+            <span className="from-primary to-secondary bg-gradient-to-tr bg-clip-text tracking-tight text-transparent">
+              {siteConfig.name}
+            </span>
           </CardTitle>
           <CardDescription>
             Manage and clean up your GitHub repositories with ease
@@ -64,7 +68,11 @@ export function Login() {
           )}
 
           <div className="flex flex-col items-center gap-2">
-            <Button onClick={handleGitHubLogin} disabled={isLoading}>
+            <Button
+              onClick={handleGitHubLogin}
+              disabled={isLoading}
+              className="group from-primary to-secondary text-primary-foreground bg-gradient-to-tr"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="animate-spin" />
@@ -72,7 +80,7 @@ export function Login() {
                 </>
               ) : (
                 <>
-                  <Github />
+                  <GithubIcon />
                   Login with GitHub
                 </>
               )}

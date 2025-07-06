@@ -12,7 +12,7 @@ export function setCachedUserData(userData: GitHubUser): void {
   if (typeof window === "undefined") return
 
   try {
-    const expiry = Date.now() + siteConfig.storage.USER.CACHE_DURATION
+    const expiry = Date.now() + Number(siteConfig.storage.USER.CACHE_DURATION)
     localStorage.setItem(
       siteConfig.storage.USER.CACHE_KEY,
       JSON.stringify(userData)
@@ -122,7 +122,8 @@ export function getCachedRepositories(): Repository[] | null {
 
     const cacheData = JSON.parse(cached)
     const isExpired =
-      Date.now() - cacheData.timestamp > siteConfig.storage.REPOS.CACHE_DURATION
+      Date.now() - cacheData.timestamp >
+      Number(siteConfig.storage.REPOS.CACHE_DURATION)
 
     if (isExpired) {
       clearCachedRepositories()
@@ -162,7 +163,8 @@ export function hasCachedRepositories(): boolean {
 
     const cacheData = JSON.parse(cached)
     const isExpired =
-      Date.now() - cacheData.timestamp > siteConfig.storage.REPOS.CACHE_DURATION
+      Date.now() - cacheData.timestamp >
+      Number(siteConfig.storage.REPOS.CACHE_DURATION)
 
     return !isExpired
   } catch (error) {
