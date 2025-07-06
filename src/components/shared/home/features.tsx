@@ -36,7 +36,7 @@ export function Features() {
   ]
 
   return (
-    <div className="mb-20 grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+    <div className="mb-20 grid gap-6 md:grid-cols-2 lg:gap-8 xl:grid-cols-3">
       {featureList.map((feature, i) => (
         <Card
           key={i}

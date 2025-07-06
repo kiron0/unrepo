@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import Logo from "@/assets/logo.png"
 import { siteConfig } from "@/config"
 
 export function Footer() {
@@ -12,10 +13,12 @@ export function Footer() {
           <div className="flex items-center space-x-3">
             <div className="from-primary to-secondary group flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-tr">
               <Image
-                src="/favicon.ico"
+                src={Logo.src}
                 alt="GitHub Logo"
                 width={16}
                 height={16}
+                placeholder="blur"
+                blurDataURL={Logo.blurDataURL}
                 className="inline-block w-5"
                 draggable={false}
                 onContextMenu={(e) => e.preventDefault()}

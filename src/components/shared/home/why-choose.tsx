@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 
 export function WhyChoose() {
   return (
-    <div className="grid items-center gap-12 lg:grid-cols-2">
+    <div className="grid items-center gap-12 xl:grid-cols-2">
       <div className="space-y-8">
         <div>
           <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-4xl">
@@ -85,15 +85,17 @@ export function WhyChoose() {
       </div>
       <div className="relative">
         <div className="from-primary to-secondary absolute inset-0 rounded-full bg-gradient-to-tr opacity-25 blur-3xl" />
-        <div className="from-primary to-secondary shadow-primary/50 group relative mx-auto flex h-64 w-64 items-center justify-center rounded-full bg-gradient-to-tr shadow-2xl lg:h-80 lg:w-80">
+        <div className="from-primary to-secondary shadow-primary/50 group relative mx-auto flex h-48 w-48 items-center justify-center rounded-full bg-gradient-to-tr shadow-2xl sm:h-56 sm:w-56 md:h-64 md:w-64 lg:h-80 lg:w-80">
           <Image
-            src={Logo}
+            src={Logo.src}
             alt="Logo"
             width={1080}
             height={1080}
+            placeholder="blur"
+            blurDataURL={Logo.blurDataURL}
             draggable={false}
             onContextMenu={(e) => e.preventDefault()}
-            className="size-44 object-cover transition-transform duration-300 select-none hover:scale-105 md:size-52"
+            className="size-32 object-cover transition-transform duration-300 select-none hover:scale-105 sm:size-36 md:size-44 lg:size-52"
           />
         </div>
         <div className="mt-6 text-center">
