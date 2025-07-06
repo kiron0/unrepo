@@ -15,8 +15,8 @@ export function Footer() {
               <Image
                 src={Logo}
                 alt="Logo"
-                width={16}
-                height={16}
+                width={499}
+                height={500}
                 className="inline-block w-5 select-none"
                 draggable={false}
                 onContextMenu={(e) => e.preventDefault()}
