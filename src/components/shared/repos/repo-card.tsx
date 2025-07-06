@@ -44,7 +44,7 @@ export function RepoCard({
   return (
     <Card
       className={cn(
-        "cursor-pointer transition-all hover:shadow-md",
+        "hover:ring-primary cursor-pointer transition-all duration-300 hover:shadow-md hover:ring",
         isSelected ? "ring-primary ring" : ""
       )}
       onClick={() => onToggleSelection(repo.full_name)}

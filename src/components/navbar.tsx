@@ -1,15 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { siteConfig } from "@/config"
-import { ChevronRightIcon, GithubIcon } from "lucide-react"
+import { ChevronRightIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-
-import { ThemeSwitcher } from "./theme-switcher"
-import { UserDropdown } from "./user-dropdown"
+import { buttonVariants } from "@/components/ui/button"
+import { ThemeSwitcher } from "@/components/theme-switcher"
+import { UserDropdown } from "@/components/user-dropdown"
 
 interface NavbarProps {
   isLoggedIn: boolean
@@ -36,15 +36,16 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
     }
 
     return (
-      <Link href="/login">
-        <Button
-          size="sm"
-          className="from-primary to-secondary bg-gradient-to-tr hover:opacity-90"
-        >
-          <GithubIcon />
-          Get Started
-          <ChevronRightIcon />
-        </Button>
+      <Link
+        href="/login"
+        className={buttonVariants({
+          className:
+            "from-primary group to-secondary group bg-gradient-to-tr transition-all duration-300 hover:scale-105 hover:opacity-90 hover:shadow-xl",
+          size: "sm",
+        })}
+      >
+        Get Started
+        <ChevronRightIcon className="transition-transform group-hover:translate-x-1" />
       </Link>
     )
   }
@@ -52,15 +53,23 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
   return (
     <nav
       className={cn(
-        "bg-background/80 fixed top-0 z-50 w-full backdrop-blur-xl",
+        "bg-background/5 fixed top-0 z-50 w-full backdrop-blur transition-all duration-300",
         isScrolled ? "border-b" : ""
       )}
     >
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center space-x-3">
-            <div className="from-primary to-accent flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-tr">
-              <GithubIcon className="h-4 w-4 text-white" />
+            <div className="from-primary group to-accent flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-tr">
+              <Image
+                src="/favicon.ico"
+                alt="GitHub Logo"
+                width={16}
+                height={16}
+                className="inline-block w-5"
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+              />
             </div>
             <span className="from-primary to-secondary bg-gradient-to-tr bg-clip-text text-lg font-bold tracking-tight text-transparent">
               {siteConfig.name}

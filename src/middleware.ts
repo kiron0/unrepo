@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { siteConfig } from "@/config"
 
 export async function middleware(req: NextRequest) {
-  const token = req.cookies.get(siteConfig.storage.TOKEN)?.value
+  const token = req.cookies.get(siteConfig.storage.TOKEN.CACHE_KEY)?.value
 
   const path = req.nextUrl.pathname
 

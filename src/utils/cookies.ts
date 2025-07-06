@@ -33,7 +33,7 @@ export async function getAccessToken(code: string): Promise<string> {
 export async function getGitHubToken(): Promise<string | null> {
   try {
     const cookieStore = await cookies()
-    return cookieStore.get(siteConfig.storage.TOKEN)?.value || null
+    return cookieStore.get(siteConfig.storage.TOKEN.CACHE_KEY)?.value || null
   } catch (error) {
     console.error("Error getting GitHub token from cookies:", error)
     return null
@@ -46,8 +46,8 @@ export async function getGitHubToken(): Promise<string | null> {
 export async function setGitHubToken(token: string): Promise<boolean> {
   try {
     const cookieStore = await cookies()
-    cookieStore.set(siteConfig.storage.TOKEN, token, {
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+    cookieStore.set(siteConfig.storage.TOKEN.CACHE_KEY, token, {
+      expires: siteConfig.storage.TOKEN.CACHE_DURATION,
       path: "/",
       secure: true,
       sameSite: "strict",
@@ -65,7 +65,7 @@ export async function setGitHubToken(token: string): Promise<boolean> {
 export async function removeGitHubToken(): Promise<boolean> {
   try {
     const cookieStore = await cookies()
-    cookieStore.delete(siteConfig.storage.TOKEN)
+    cookieStore.delete(siteConfig.storage.TOKEN.CACHE_KEY)
     return true
   } catch (error) {
     console.error("Error removing GitHub token from cookies:", error)

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ChevronRightIcon, GithubIcon, ZapIcon } from "lucide-react"
+import { ChevronRightIcon, ZapIcon } from "lucide-react"
 import { GoRepo } from "react-icons/go"
 
 import { buttonVariants } from "@/components/ui/button"
@@ -38,7 +38,6 @@ export function Hero({ isLoggedIn }: HeroProps) {
             "group from-primary to-secondary text-primary-foreground hover:shadow-primary/50 bg-gradient-to-tr text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl",
         })}
       >
-        <GithubIcon className="h-5 w-5 transition-transform group-hover:scale-110" />
         Get Started
         <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </Link>

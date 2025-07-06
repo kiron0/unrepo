@@ -1,7 +1,9 @@
 "use client"
 
+import Image from "next/image"
+import Logo from "@/assets/logo.png"
 import { siteConfig } from "@/config"
-import { GithubIcon, ShieldIcon, UsersIcon, ZapIcon } from "lucide-react"
+import { ShieldIcon, UsersIcon, ZapIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 
@@ -20,8 +22,8 @@ export function WhyChoose() {
             </span>
           </h2>
           <p className="text-muted-foreground text-lg">
-            Built by developers, for developers. Experience the fastest way to
-            manage your GitHub repositories.
+            Streamline your GitHub workflow with tools designed for efficient
+            repository management and cleanup.
           </p>
         </div>
         <div className="space-y-6">
@@ -35,11 +37,11 @@ export function WhyChoose() {
             </Badge>
             <div className="space-y-1">
               <h3 className="text-card-foreground font-semibold">
-                Lightning Performance
+                Efficient Processing
               </h3>
               <p className="text-muted-foreground">
-                Process thousands of repositories in seconds with our optimized
-                GitHub API integration.
+                Handle multiple repositories at once with our streamlined GitHub
+                API integration for faster workflow.
               </p>
             </div>
           </div>
@@ -53,11 +55,11 @@ export function WhyChoose() {
             </Badge>
             <div className="space-y-1">
               <h3 className="text-card-foreground font-semibold">
-                Bank-Level Security
+                Safe & Secure
               </h3>
               <p className="text-muted-foreground">
-                Enterprise-grade OAuth 2.0 with minimal permissions and complete
-                transparency.
+                Uses standard OAuth 2.0 authentication with read-only access to
+                ensure your account security.
               </p>
             </div>
           </div>
@@ -67,15 +69,15 @@ export function WhyChoose() {
               className="bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold"
             >
               <UsersIcon className="mr-1 h-3 w-3" />
-              Trusted
+              Simple
             </Badge>
             <div className="space-y-1">
               <h3 className="text-card-foreground font-semibold">
-                Developer Approved
+                User Friendly
               </h3>
               <p className="text-muted-foreground">
-                Used by thousands of developers worldwide to maintain clean
-                GitHub profiles.
+                Intuitive interface designed for developers to quickly manage
+                and organize their GitHub repositories.
               </p>
             </div>
           </div>
@@ -83,19 +85,27 @@ export function WhyChoose() {
       </div>
       <div className="relative">
         <div className="from-primary to-secondary absolute inset-0 rounded-full bg-gradient-to-tr opacity-25 blur-3xl" />
-        <div className="from-primary to-secondary shadow-primary/50 relative mx-auto flex h-64 w-64 items-center justify-center rounded-full bg-gradient-to-tr shadow-2xl lg:h-80 lg:w-80">
-          <GithubIcon className="text-primary-foreground h-32 w-32 lg:h-40 lg:w-40" />
+        <div className="from-primary to-secondary shadow-primary/50 group relative mx-auto flex h-64 w-64 items-center justify-center rounded-full bg-gradient-to-tr shadow-2xl lg:h-80 lg:w-80">
+          <Image
+            src={Logo}
+            alt="Logo"
+            width={1080}
+            height={1080}
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
+            className="size-44 object-cover transition-transform duration-300 select-none hover:scale-105 md:size-52"
+          />
         </div>
         <div className="mt-6 text-center">
           <p className="text-muted-foreground text-lg font-medium">
-            Trusted by developers worldwide
+            Simple. Secure. Effective.
           </p>
           <div className="text-muted-foreground mt-2 justify-center space-x-4 text-sm md:flex">
-            <span>10K+ Users</span>
+            <span>Easy to Use</span>
             <span>•</span>
-            <span>50K+ Repos Cleaned</span>
+            <span>OAuth Secure</span>
             <span>•</span>
-            <span>99.9% Uptime</span>
+            <span>No Installation</span>
           </div>
         </div>
       </div>

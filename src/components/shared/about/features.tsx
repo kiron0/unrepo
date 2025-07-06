@@ -17,8 +17,9 @@ const keyFeatures = [
     icon: Shield,
   },
   {
-    title: "Modern Tech Stack",
-    description: "Built with React 19, Next.js, and Node.js",
+    title: "Quick Setup",
+    description:
+      "Get started in seconds - no downloads or installations required",
     icon: Code,
   },
   {

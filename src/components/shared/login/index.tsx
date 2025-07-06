@@ -80,7 +80,7 @@ export function Login() {
                 </>
               ) : (
                 <>
-                  <GithubIcon />
+                  <GithubIcon className="transition-transform group-hover:scale-110" />
                   Login with GitHub
                 </>
               )}

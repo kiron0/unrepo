@@ -301,13 +301,13 @@ export function Repos() {
         <div className="w-full">
           <Link
             href="/"
-            className="from-primary to-secondary flex items-center bg-gradient-to-tr bg-clip-text text-2xl font-bold text-transparent md:text-3xl"
+            className="from-primary to-secondary flex items-center bg-gradient-to-tr bg-clip-text text-xl font-bold text-transparent md:text-2xl"
           >
             <ChevronLeftIcon className="text-muted-foreground" />
             GitHub Repositories
           </Link>
           <p className="text-muted-foreground text-sm md:text-base">
-            Manage and clean up your repositories
+            Manage repositories with filters, search, and batch operations.
           </p>
         </div>
         <div className="flex w-full justify-end gap-2">
