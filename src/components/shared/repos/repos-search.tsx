@@ -1,4 +1,6 @@
-import { useState } from "react"
+"use client"
+
+import { useEffect, useState } from "react"
 import { Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -9,21 +11,27 @@ import { RepoFilters, type FilterParams } from "./repo-filters"
 interface ReposSearchProps {
   filters: FilterParams
   onFilterChange: (key: keyof FilterParams, value: string | number) => void
+  onFiltersChange: (updates: Partial<FilterParams>) => void
   onSearch: (searchTerm: string) => void
+  onClearFilters: () => void
   repositoryCount: number
   loading: boolean
-  fetchRepositories: (forceRefresh: boolean, filters: FilterParams) => void
 }
 
 export function ReposSearch({
   filters,
   onFilterChange,
+  onFiltersChange,
   onSearch,
+  onClearFilters,
   repositoryCount,
   loading,
-  fetchRepositories,
 }: ReposSearchProps) {
   const [searchValue, setSearchValue] = useState(filters.search)
+
+  useEffect(() => {
+    setSearchValue(filters.search)
+  }, [filters.search])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,7 +40,7 @@ export function ReposSearch({
 
   const handleClear = () => {
     setSearchValue("")
-    fetchRepositories(true, { ...filters, search: "" })
+    onFilterChange("search", "")
   }
 
   return (
@@ -69,7 +77,9 @@ export function ReposSearch({
         <RepoFilters
           filters={filters}
           onFilterChange={onFilterChange}
+          onFiltersChange={onFiltersChange}
           onSearch={onSearch}
+          onClearFilters={onClearFilters}
           repositoryCount={repositoryCount}
           loading={loading}
         />

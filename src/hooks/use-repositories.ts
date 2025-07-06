@@ -3,13 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { GitHubUser, Repository } from "@/types"
-import {
-  clearCachedRepositories,
-  clearCachedUserData,
-  getCachedRepositories,
-  setCachedRepositories,
-  setCachedUserData,
-} from "@/utils/cache"
+import { clearCachedUserData, setCachedUserData } from "@/utils/cache"
 import axios from "axios"
 
 import type { FilterParams } from "@/components/shared/repos/repo-filters"
@@ -33,16 +27,80 @@ export function useRepositories() {
     }
   }, [])
 
+  const getFiltersFromURL = useCallback((): FilterParams => {
+    const searchParam = searchParams.get("search") || ""
+    const affiliationParam = searchParams.get("affiliation") || "owner"
+    const visibilityParam = searchParams.get("visibility") || "all"
+    const sortParam = searchParams.get("sort") || "updated"
+    const directionParam = searchParams.get("direction") || "desc"
+    const perPageParam = parseInt(searchParams.get("per_page") || "30")
+    const pageParam = parseInt(searchParams.get("page") || "1")
+
+    const validAffiliation: FilterParams["affiliation"] = [
+      "owner",
+      "collaborator",
+      "organization_member",
+    ].includes(affiliationParam as any)
+      ? (affiliationParam as FilterParams["affiliation"])
+      : "owner"
+
+    const validVisibility: FilterParams["visibility"] = [
+      "all",
+      "public",
+      "private",
+    ].includes(visibilityParam as any)
+      ? (visibilityParam as FilterParams["visibility"])
+      : "all"
+
+    const validSort: FilterParams["sort"] = [
+      "created",
+      "updated",
+      "pushed",
+      "full_name",
+    ].includes(sortParam as any)
+      ? (sortParam as FilterParams["sort"])
+      : "updated"
+
+    const validDirection: FilterParams["direction"] = ["asc", "desc"].includes(
+      directionParam as any
+    )
+      ? (directionParam as FilterParams["direction"])
+      : "desc"
+
+    // Validate per_page to only allowed values
+    const allowedPerPageValues: FilterParams["per_page"][] = [
+      10, 25, 30, 50, 100,
+    ]
+    const validPerPage: FilterParams["per_page"] =
+      allowedPerPageValues.includes(perPageParam as any)
+        ? (perPageParam as FilterParams["per_page"])
+        : 30
+
+    const validPage = Math.max(pageParam || 1, 1)
+
+    return {
+      search: searchParam,
+      affiliation: validAffiliation,
+      visibility: validVisibility,
+      sort: validSort,
+      direction: validDirection,
+      per_page: validPerPage,
+      page: validPage,
+    }
+  }, [searchParams])
+
+  // Initialize with default filters, will be updated from URL in useEffect
   const [filters, setFilters] = useState<FilterParams>({
     search: "",
     affiliation: "owner",
-    type: "all",
     visibility: "all",
     sort: "updated",
     direction: "desc",
     per_page: 30,
     page: 1,
   })
+
+  const [isInitialized, setIsInitialized] = useState(false)
 
   const updateCachedUserDataAfterDeletion = useCallback(async () => {
     try {
@@ -53,14 +111,46 @@ export function useRepositories() {
     }
   }, [])
 
+  const updateURLWithFilters = useCallback(
+    (filterParams: FilterParams) => {
+      const params = new URLSearchParams()
+
+      // Only add non-default values to the URL
+      if (filterParams.search) params.set("search", filterParams.search)
+      if (filterParams.affiliation !== "owner")
+        params.set("affiliation", filterParams.affiliation)
+      if (filterParams.visibility !== "all")
+        params.set("visibility", filterParams.visibility)
+      if (filterParams.sort !== "updated") params.set("sort", filterParams.sort)
+      if (filterParams.direction !== "desc")
+        params.set("direction", filterParams.direction)
+      if (filterParams.per_page !== 30)
+        params.set("per_page", filterParams.per_page.toString())
+      if (filterParams.page !== 1)
+        params.set("page", filterParams.page.toString())
+
+      const queryString = params.toString()
+      const newUrl = queryString ? `/repos?${queryString}` : "/repos"
+
+      router.replace(newUrl, { scroll: false })
+    },
+    [router]
+  )
+
   const buildQueryString = useCallback((filterParams: FilterParams) => {
     const params = new URLSearchParams()
 
-    Object.entries(filterParams).forEach(([key, value]) => {
-      if (value && value !== "" && value !== "all") {
-        params.append(key, value.toString())
-      }
-    })
+    params.append("sort", filterParams.sort)
+    params.append("direction", filterParams.direction)
+    params.append("per_page", filterParams.per_page.toString())
+    params.append("page", filterParams.page.toString())
+
+    if (filterParams.affiliation !== "owner") {
+      params.append("affiliation", filterParams.affiliation)
+    }
+    if (filterParams.visibility !== "all") {
+      params.append("visibility", filterParams.visibility)
+    }
 
     return params.toString()
   }, [])
@@ -94,26 +184,14 @@ export function useRepositories() {
   )
 
   const fetchRepositories = useCallback(
-    async (forceRefresh = false, currentFilters: FilterParams) => {
+    async (currentFilters: FilterParams) => {
       setLoading(true)
       try {
-        if (!forceRefresh) {
-          const cachedRepos = getCachedRepositories()
-
-          if (cachedRepos && Array.isArray(cachedRepos)) {
-            setRepositoriesSafe(cachedRepos)
-            setLoading(false)
-            return
-          } else if (cachedRepos) {
-            await clearCachedRepositories()
-          }
-        }
-
+        // Always fetch fresh data for each request
         const repos = await fetchRepositoriesFromAPI(currentFilters)
 
         if (repos && Array.isArray(repos)) {
           setRepositoriesSafe(repos)
-          setCachedRepositories(repos)
 
           if (repos.length === currentFilters.per_page) {
             setTotalPages(currentFilters.page + 1)
@@ -131,20 +209,54 @@ export function useRepositories() {
   )
 
   const refreshRepositories = useCallback(async () => {
-    await fetchRepositories(true, filters)
+    await fetchRepositories(filters)
   }, [fetchRepositories, filters])
 
   const handleFilterChange = useCallback(
     (key: keyof FilterParams, value: string | number) => {
+      let processedValue: string | number = value
+
+      // Validate and sanitize values
+      if (key === "page" || key === "per_page") {
+        processedValue = Number(value)
+        if (key === "per_page") {
+          // Validate per_page to only allowed values
+          const allowedPerPageValues: FilterParams["per_page"][] = [
+            10, 25, 30, 50, 100,
+          ]
+          processedValue = allowedPerPageValues.includes(processedValue as any)
+            ? (processedValue as FilterParams["per_page"])
+            : 30
+        } else if (key === "page") {
+          processedValue = Math.max(processedValue, 1)
+        }
+      }
+
       const newFilters = {
         ...filters,
-        [key]: key === "page" || key === "per_page" ? Number(value) : value,
-        page: key !== "page" ? 1 : Number(value),
+        [key]: processedValue,
+        page: key !== "page" ? 1 : Number(processedValue),
       }
       setFilters(newFilters)
-      fetchRepositories(true, newFilters)
+      updateURLWithFilters(newFilters)
+      fetchRepositories(newFilters)
     },
-    [filters, fetchRepositories]
+    [filters, fetchRepositories, updateURLWithFilters]
+  )
+
+  const handleFiltersChange = useCallback(
+    (updates: Partial<FilterParams>) => {
+      const newFilters = {
+        ...filters,
+        ...updates,
+        // Reset page to 1 unless page is explicitly being updated
+        page: updates.page !== undefined ? updates.page : 1,
+      }
+      setFilters(newFilters)
+      updateURLWithFilters(newFilters)
+      fetchRepositories(newFilters)
+    },
+    [filters, fetchRepositories, updateURLWithFilters]
   )
 
   const handleSearch = useCallback(
@@ -171,12 +283,10 @@ export function useRepositories() {
           (repo) => repo.full_name !== fullName
         )
         setRepositoriesSafe(updatedRepos)
-        setCachedRepositories(updatedRepos)
 
         updateCachedUserDataAfterDeletion()
 
         notifySuccess({
-          title: "Success",
           description: `Repository ${fullName} deleted successfully`,
         })
       }
@@ -204,7 +314,6 @@ export function useRepositories() {
           (repo) => !result.results.successful.includes(repo.full_name)
         )
         setRepositoriesSafe(updatedRepos)
-        setCachedRepositories(updatedRepos)
         setSelectedRepos([])
         setTotalPages(Math.ceil(updatedRepos.length / filters.per_page))
 
@@ -243,7 +352,6 @@ export function useRepositories() {
       })
 
       await clearCachedUserData()
-      await clearCachedRepositories()
 
       router.push("/")
       router.refresh()
@@ -269,29 +377,55 @@ export function useRepositories() {
     }
   }
 
-  useEffect(() => {
-    const tokenFromUrl = searchParams.get("token")
-    if (tokenFromUrl) {
-      window.history.replaceState({}, "", "/repos")
-    }
-  }, [searchParams])
-
-  useEffect(() => {
-    if (isLoggingOut) return
-
-    const initialFilters = {
+  const clearAllFilters = useCallback(() => {
+    const defaultFilters: FilterParams = {
       search: "",
       affiliation: "owner",
-      type: "all",
       visibility: "all",
       sort: "updated",
       direction: "desc",
       per_page: 30,
       page: 1,
-    } as FilterParams
+    }
+    setFilters(defaultFilters)
+    updateURLWithFilters(defaultFilters)
+    fetchRepositories(defaultFilters)
+  }, [updateURLWithFilters, fetchRepositories])
 
-    fetchRepositories(false, initialFilters)
-  }, [fetchRepositories, isLoggingOut])
+  useEffect(() => {
+    const tokenFromUrl = searchParams.get("token")
+    if (tokenFromUrl) {
+      window.history.replaceState({}, "", "/repos")
+      return
+    }
+
+    if (isLoggingOut) return
+
+    // Initialize filters from URL on first load
+    if (!isInitialized) {
+      const urlFilters = getFiltersFromURL()
+      setFilters(urlFilters)
+      setIsInitialized(true)
+      fetchRepositories(urlFilters)
+    } else {
+      // Handle URL changes after initialization (browser back/forward)
+      const urlFilters = getFiltersFromURL()
+      // Only update if filters actually changed to avoid infinite loops
+      const filtersChanged =
+        JSON.stringify(filters) !== JSON.stringify(urlFilters)
+      if (filtersChanged) {
+        setFilters(urlFilters)
+        fetchRepositories(urlFilters)
+      }
+    }
+  }, [
+    searchParams,
+    isLoggingOut,
+    getFiltersFromURL,
+    fetchRepositories,
+    isInitialized,
+    filters,
+  ])
 
   return {
     repositories,
@@ -302,6 +436,7 @@ export function useRepositories() {
     filters,
     refreshRepositories,
     handleFilterChange,
+    handleFiltersChange,
     handleSearch,
     deleteRepository,
     batchDeleteRepositories,
@@ -309,5 +444,6 @@ export function useRepositories() {
     toggleRepoSelection,
     selectAllRepos,
     fetchRepositories,
+    clearAllFilters,
   }
 }

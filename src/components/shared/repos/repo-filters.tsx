@@ -24,19 +24,63 @@ import {
 
 export interface FilterParams {
   search: string
-  affiliation: string
-  type: string
-  visibility: string
-  sort: string
-  direction: string
-  per_page: number
+  affiliation: "owner" | "collaborator" | "organization_member"
+  visibility: "all" | "public" | "private"
+  sort: "created" | "updated" | "pushed" | "full_name"
+  direction: "asc" | "desc"
+  per_page: 10 | 25 | 30 | 50 | 100
   page: number
 }
+
+export const AFFILIATION_OPTIONS: {
+  value: FilterParams["affiliation"]
+  label: string
+}[] = [
+  { value: "owner", label: "Owner" },
+  { value: "collaborator", label: "Collaborator" },
+  { value: "organization_member", label: "Organization Member" },
+]
+
+export const VISIBILITY_OPTIONS: {
+  value: FilterParams["visibility"]
+  label: string
+}[] = [
+  { value: "all", label: "All" },
+  { value: "public", label: "Public" },
+  { value: "private", label: "Private" },
+]
+
+export const SORT_OPTIONS: {
+  value: `${FilterParams["sort"]}-${FilterParams["direction"]}`
+  label: string
+}[] = [
+  { value: "updated-desc", label: "Recently Updated" },
+  { value: "updated-asc", label: "Least Recently Updated" },
+  { value: "created-desc", label: "Recently Created" },
+  { value: "created-asc", label: "Oldest Created" },
+  { value: "pushed-desc", label: "Recently Pushed" },
+  { value: "pushed-asc", label: "Least Recently Pushed" },
+  { value: "full_name-asc", label: "Name (A-Z)" },
+  { value: "full_name-desc", label: "Name (Z-A)" },
+]
+
+export const PER_PAGE_OPTIONS: {
+  value: FilterParams["per_page"]
+  label: string
+}[] = [
+  { value: 10, label: "10" },
+  { value: 25, label: "25" },
+  { value: 30, label: "30" },
+  { value: 50, label: "50" },
+  { value: 100, label: "100" },
+]
 
 interface RepoFiltersProps {
   filters: FilterParams
   onFilterChange: (key: keyof FilterParams, value: string | number) => void
+  onFiltersChange: (updates: Partial<FilterParams>) => void
   onSearch: (searchTerm: string) => void
+  onClearFilters: () => void
   repositoryCount: number
   loading?: boolean
 }
@@ -44,7 +88,9 @@ interface RepoFiltersProps {
 export function RepoFilters({
   filters,
   onFilterChange,
+  onFiltersChange,
   onSearch,
+  onClearFilters,
   repositoryCount,
   loading = false,
 }: RepoFiltersProps) {
@@ -57,7 +103,6 @@ export function RepoFilters({
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (key === "search" && value) return true
     if (key === "affiliation" && value !== "owner") return true
-    if (key === "type" && value !== "all") return true
     if (key === "visibility" && value !== "all") return true
     if (key === "sort" && value !== "updated") return true
     if (key === "direction" && value !== "desc") return true
@@ -133,35 +178,19 @@ export function RepoFilters({
               <Label>Affiliation</Label>
               <Select
                 value={filters.affiliation}
-                onValueChange={(value) => onFilterChange("affiliation", value)}
+                onValueChange={(value: FilterParams["affiliation"]) =>
+                  onFilterChange("affiliation", value)
+                }
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="owner">Owner</SelectItem>
-                  <SelectItem value="collaborator">Collaborator</SelectItem>
-                  <SelectItem value="organization_member">
-                    Organization Member
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <Select
-                value={filters.type}
-                onValueChange={(value) => onFilterChange("type", value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="owner">Owner</SelectItem>
-                  <SelectItem value="public">Public</SelectItem>
-                  <SelectItem value="private">Private</SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
+                  {AFFILIATION_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -169,15 +198,19 @@ export function RepoFilters({
               <Label>Visibility</Label>
               <Select
                 value={filters.visibility}
-                onValueChange={(value) => onFilterChange("visibility", value)}
+                onValueChange={(value: FilterParams["visibility"]) =>
+                  onFilterChange("visibility", value)
+                }
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="public">Public</SelectItem>
-                  <SelectItem value="private">Private</SelectItem>
+                  {VISIBILITY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -186,27 +219,22 @@ export function RepoFilters({
               <Select
                 value={`${filters.sort}-${filters.direction}`}
                 onValueChange={(value) => {
-                  const [sort, direction] = value.split("-")
-                  onFilterChange("sort", sort)
-                  onFilterChange("direction", direction)
+                  const [sort, direction] = value.split("-") as [
+                    FilterParams["sort"],
+                    FilterParams["direction"],
+                  ]
+                  onFiltersChange({ sort, direction })
                 }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="updated-desc">Recently Updated</SelectItem>
-                  <SelectItem value="updated-asc">
-                    Least Recently Updated
-                  </SelectItem>
-                  <SelectItem value="created-desc">Recently Created</SelectItem>
-                  <SelectItem value="created-asc">Oldest Created</SelectItem>
-                  <SelectItem value="pushed-desc">Recently Pushed</SelectItem>
-                  <SelectItem value="pushed-asc">
-                    Least Recently Pushed
-                  </SelectItem>
-                  <SelectItem value="full_name-asc">Name (A-Z)</SelectItem>
-                  <SelectItem value="full_name-desc">Name (Z-A)</SelectItem>
+                  {SORT_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -214,17 +242,25 @@ export function RepoFilters({
               <Label>Items per page</Label>
               <Select
                 value={filters.per_page.toString()}
-                onValueChange={(value) => onFilterChange("per_page", value)}
+                onValueChange={(value) =>
+                  onFilterChange(
+                    "per_page",
+                    parseInt(value) as FilterParams["per_page"]
+                  )
+                }
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="30">30</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
+                  {PER_PAGE_OPTIONS.map((option) => (
+                    <SelectItem
+                      key={option.value}
+                      value={option.value.toString()}
+                    >
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -234,19 +270,7 @@ export function RepoFilters({
               Showing {repositoryCount} repositories
             </span>
             {activeFiltersCount > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  onFilterChange("search", "")
-                  onFilterChange("affiliation", "owner")
-                  onFilterChange("type", "all")
-                  onFilterChange("visibility", "all")
-                  onFilterChange("sort", "updated")
-                  onFilterChange("direction", "desc")
-                  onFilterChange("per_page", 30)
-                }}
-              >
+              <Button variant="destructive" size="sm" onClick={onClearFilters}>
                 Clear filters
               </Button>
             )}

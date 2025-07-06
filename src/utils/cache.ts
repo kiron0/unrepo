@@ -1,5 +1,5 @@
 import { siteConfig } from "@/config"
-import type { GitHubUser, Repository } from "@/types"
+import type { GitHubUser } from "@/types"
 
 // Shared cache for access tokens (server-side only)
 // In production, consider using Redis or a database for persistence
@@ -86,89 +86,6 @@ export function hasCachedUserData(): boolean {
     return Date.now() <= expiryTime
   } catch (error) {
     console.error("Error checking cached user data:", error)
-    return false
-  }
-}
-
-/**
- * Set cached repositories data in localStorage
- */
-export function setCachedRepositories(repos: Repository[]): void {
-  if (typeof window === "undefined") return
-
-  try {
-    const cacheData = {
-      repositories: repos,
-      timestamp: Date.now(),
-    }
-    localStorage.setItem(
-      siteConfig.storage.REPOS.CACHE_KEY,
-      JSON.stringify(cacheData)
-    )
-  } catch (error) {
-    console.error("Error setting cached repositories:", error)
-  }
-}
-
-/**
- * Get cached repositories data from localStorage
- */
-export function getCachedRepositories(): Repository[] | null {
-  if (typeof window === "undefined") return null
-
-  try {
-    const cached = localStorage.getItem(siteConfig.storage.REPOS.CACHE_KEY)
-    if (!cached) return null
-
-    const cacheData = JSON.parse(cached)
-    const isExpired =
-      Date.now() - cacheData.timestamp >
-      Number(siteConfig.storage.REPOS.CACHE_DURATION)
-
-    if (isExpired) {
-      clearCachedRepositories()
-      return null
-    }
-
-    return cacheData.repositories
-  } catch (error) {
-    console.error("Error getting cached repositories:", error)
-    clearCachedRepositories()
-    return null
-  }
-}
-
-/**
- * Clear cached repositories data from localStorage
- */
-export async function clearCachedRepositories(): Promise<void> {
-  if (typeof window === "undefined") return
-
-  try {
-    localStorage.removeItem(siteConfig.storage.REPOS.CACHE_KEY)
-  } catch (error) {
-    console.error("Error clearing cached repositories:", error)
-  }
-}
-
-/**
- * Check if cached repositories data exists and is valid
- */
-export function hasCachedRepositories(): boolean {
-  if (typeof window === "undefined") return false
-
-  try {
-    const cached = localStorage.getItem(siteConfig.storage.REPOS.CACHE_KEY)
-    if (!cached) return false
-
-    const cacheData = JSON.parse(cached)
-    const isExpired =
-      Date.now() - cacheData.timestamp >
-      Number(siteConfig.storage.REPOS.CACHE_DURATION)
-
-    return !isExpired
-  } catch (error) {
-    console.error("Error checking cached repositories:", error)
     return false
   }
 }

@@ -24,13 +24,14 @@ function ReposSuspense() {
     filters,
     refreshRepositories,
     handleFilterChange,
+    handleFiltersChange,
     handleSearch,
     deleteRepository,
     batchDeleteRepositories,
     handleLogout,
     toggleRepoSelection,
     selectAllRepos,
-    fetchRepositories,
+    clearAllFilters,
   } = useRepositories()
 
   return (
@@ -45,10 +46,11 @@ function ReposSuspense() {
       <ReposSearch
         filters={filters}
         onFilterChange={handleFilterChange}
+        onFiltersChange={handleFiltersChange}
         onSearch={handleSearch}
+        onClearFilters={clearAllFilters}
         repositoryCount={repositories.length}
         loading={loading}
-        fetchRepositories={fetchRepositories}
       />
       <BatchActions
         selectedRepos={selectedRepos}

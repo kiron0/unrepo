@@ -3,11 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  clearCachedRepositories,
-  clearCachedUserData,
-  getCachedUserData,
-} from "@/utils/cache"
+import { clearCachedUserData, getCachedUserData } from "@/utils/cache"
 import { LogOut, UserIcon } from "lucide-react"
 import { useRouter } from "nextjs-toploader/app"
 import { GoRepo } from "react-icons/go"
@@ -51,7 +47,6 @@ export function UserDropdown({
       })
 
       await clearCachedUserData()
-      await clearCachedRepositories()
 
       if (pathname !== "/") {
         router.push("/")

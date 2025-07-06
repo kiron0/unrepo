@@ -29,8 +29,6 @@ export async function GET(request: NextRequest) {
     }
 
     const params: GitHubParams = {
-      per_page: 100,
-      page: 1,
       affiliation: "owner",
       ...Object.fromEntries(
         [...searchParams.entries()].filter(
@@ -39,6 +37,10 @@ export async function GET(request: NextRequest) {
       ),
     }
 
+    if (!params.per_page) params.per_page = 30
+    if (!params.page) params.page = 1
+    if (!params.sort) params.sort = "updated"
+    if (!params.direction) params.direction = "desc"
     ;["per_page", "page"].forEach((key) => {
       if (params[key]) params[key] = Number(params[key])
     })

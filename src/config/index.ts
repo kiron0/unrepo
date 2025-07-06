@@ -45,11 +45,6 @@ export const siteConfig = {
       CACHE_EXPIRY_KEY: "github_user_data_expiry",
       CACHE_DURATION,
     },
-    REPOS: {
-      CACHE_KEY: "github_repos",
-      CACHE_EXPIRY_KEY: "github_repos_data_expiry",
-      CACHE_DURATION,
-    },
   },
 }
 
