@@ -39,6 +39,14 @@ export function Repos() {
   const [isBatchOpen, setIsBatchOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
+  const setRepositoriesSafe = useCallback((repos: any) => {
+    if (Array.isArray(repos)) {
+      setRepositories(repos)
+    } else {
+      setRepositories([])
+    }
+  }, [])
+
   const [filters, setFilters] = useState<FilterParams>({
     search: "",
     affiliation: "owner",
@@ -80,15 +88,37 @@ export function Repos() {
         const queryString = buildQueryString(filterParams)
         const response = await fetch(`/api/github/repos?${queryString}`)
 
+        if (!response.ok) {
+          let errorData
+          try {
+            errorData = await response.json()
+          } catch {
+            errorData = { error: "Unknown error" }
+          }
+
+          // Handle authentication errors
+          if (response.status === 401 && errorData.redirectTo) {
+            window.location.href = errorData.redirectTo
+            return []
+          }
+
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
         const repos = await response.json()
-        return repos
+
+        if (Array.isArray(repos)) {
+          return repos
+        } else {
+          return []
+        }
       } catch (error) {
         console.error("Error fetching repositories:", error)
         notifyError({
           title: "Error",
           description: "Failed to fetch repositories",
         })
-        return null
+        return []
       }
     },
     [buildQueryString]
@@ -100,16 +130,22 @@ export function Repos() {
       try {
         if (!forceRefresh) {
           const cachedRepos = getCachedRepositories()
-          if (cachedRepos) {
-            setRepositories(cachedRepos)
+
+          // Validate cached data is actually an array
+          if (cachedRepos && Array.isArray(cachedRepos)) {
+            setRepositoriesSafe(cachedRepos)
             setLoading(false)
             return
+          } else if (cachedRepos) {
+            // Clear invalid cached data
+            await clearCachedRepositories()
           }
         }
 
         const repos = await fetchRepositoriesFromAPI(currentFilters)
-        if (repos) {
-          setRepositories(repos)
+
+        if (repos && Array.isArray(repos)) {
+          setRepositoriesSafe(repos)
           setCachedRepositories(repos)
 
           if (repos.length === currentFilters.per_page) {
@@ -117,12 +153,15 @@ export function Repos() {
           } else {
             setTotalPages(currentFilters.page)
           }
+        } else {
+          // Set empty array if no valid repos returned
+          setRepositoriesSafe([])
         }
       } finally {
         setLoading(false)
       }
     },
-    [fetchRepositoriesFromAPI]
+    [fetchRepositoriesFromAPI, setRepositoriesSafe]
   )
 
   const refreshRepositories = useCallback(async () => {
@@ -169,7 +208,7 @@ export function Repos() {
         const updatedRepos = repositories.filter(
           (repo) => repo.full_name !== fullName
         )
-        setRepositories(updatedRepos)
+        setRepositoriesSafe(updatedRepos)
         setCachedRepositories(updatedRepos)
 
         updateCachedUserDataAfterDeletion()
@@ -207,7 +246,7 @@ export function Repos() {
         const updatedRepos = repositories.filter(
           (repo) => !result.results.successful.includes(repo.full_name)
         )
-        setRepositories(updatedRepos)
+        setRepositoriesSafe(updatedRepos)
         setCachedRepositories(updatedRepos)
         setSelectedRepos([])
         setTotalPages(Math.ceil(updatedRepos.length / filters.per_page))
@@ -233,9 +272,9 @@ export function Repos() {
       setIsLoggingOut(true)
 
       setSelectedRepos([])
-      setRepositories([])
+      setRepositoriesSafe([])
 
-      await fetch("/api/auth/logout", { method: "POST" }).then((res) => {
+      await fetch("/api/auth/sign-out", { method: "POST" }).then((res) => {
         if (res.ok) {
           notifySuccess({
             description: "You have been logged out successfully.",
@@ -424,7 +463,28 @@ export function Repos() {
         </div>
       ) : (
         <>
-          {repositories.length === 0 ? (
+          {repositories &&
+          Array.isArray(repositories) &&
+          repositories?.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              {(() => {
+                if (!Array.isArray(repositories)) {
+                  setRepositoriesSafe([])
+                  return null
+                }
+
+                return repositories.map((repo) => (
+                  <RepoCard
+                    key={repo.id}
+                    repo={repo}
+                    isSelected={selectedRepos.includes(repo.full_name)}
+                    onToggleSelection={toggleRepoSelection}
+                    onDelete={deleteRepository}
+                  />
+                ))
+              })()}
+            </div>
+          ) : (
             <div className="flex h-[300px] flex-col items-center justify-center gap-2 rounded-xl border text-center">
               <AlertTriangle className="text-destructive size-12" />
               <p className="text-muted-foreground">
@@ -432,18 +492,6 @@ export function Repos() {
                   ? `No repositories found matching "${filters.search}"`
                   : "No repositories found"}
               </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-              {repositories?.map((repo) => (
-                <RepoCard
-                  key={repo.id}
-                  repo={repo}
-                  isSelected={selectedRepos.includes(repo.full_name)}
-                  onToggleSelection={toggleRepoSelection}
-                  onDelete={deleteRepository}
-                />
-              ))}
             </div>
           )}
           <RepoPagination

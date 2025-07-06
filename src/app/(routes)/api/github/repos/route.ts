@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server"
-import { getGitHubToken } from "@/utils/cookies"
+import { getGitHubToken, removeGitHubToken } from "@/utils/cookies"
 import axios from "axios"
 
 export async function GET(request: Request) {
   try {
     const accessToken = await getGitHubToken()
     if (!accessToken) {
+      await removeGitHubToken()
       return NextResponse.json(
-        { error: "Access token missing" },
+        {
+          error: "access_token_missing",
+          redirectTo: "/sign-in?error=access_token_missing",
+        },
         { status: 401 }
       )
     }
@@ -53,7 +57,23 @@ export async function GET(request: Request) {
 
     return NextResponse.json(responseData)
   } catch (error: any) {
-    console.error("Repo Fetch Error:", error.response?.data || error.message)
+    console.error(
+      "Error fetching repositories:",
+      error?.response?.data || error
+    )
+
+    // If we get a 401 error, remove the token and return auth error
+    if (error?.response?.status === 401) {
+      await removeGitHubToken()
+      return NextResponse.json(
+        {
+          error: "bad_credentials",
+          redirectTo: "/sign-in?error=bad_credentials",
+        },
+        { status: 401 }
+      )
+    }
+
     return NextResponse.json(
       { error: "Failed to fetch repositories" },
       { status: 500 }

@@ -38,15 +38,19 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
 
     return (
       <Link
-        href="/login"
+        href="/sign-in"
         className={buttonVariants({
-          className:
-            "from-primary group to-secondary group bg-gradient-to-tr transition-all duration-300 hover:scale-105 hover:opacity-90 hover:shadow-xl",
+          variant: "outline",
           size: "sm",
+          className:
+            "group text-primary hover:text-primary-foreground relative overflow-hidden transition-all duration-300 hover:scale-105",
         })}
       >
-        Get Started
-        <ChevronRightIcon className="transition-transform group-hover:translate-x-1" />
+        <span className="from-primary to-accent absolute inset-0 bg-gradient-to-r opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <span className="relative z-10 flex items-center gap-1">
+          Sign In
+          <ChevronRightIcon className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
+        </span>
       </Link>
     )
   }
@@ -63,13 +67,11 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
           <Link href="/" className="flex items-center space-x-3">
             <div className="from-primary group to-accent flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-tr">
               <Image
-                src={Logo.src}
+                src={Logo}
                 alt="Logo"
                 width={16}
                 height={16}
-                placeholder="blur"
-                blurDataURL={Logo.blurDataURL}
-                className="inline-block w-5"
+                className="inline-block w-5 select-none"
                 draggable={false}
                 onContextMenu={(e) => e.preventDefault()}
               />

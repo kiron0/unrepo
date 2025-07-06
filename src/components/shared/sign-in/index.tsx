@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export function Login() {
+export function SignIn() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
@@ -26,13 +26,19 @@ export function Login() {
       setError("Authentication failed. Please try again.")
     } else if (errorParam === "access_denied") {
       setError("Access denied. Please allow access to continue.")
+    } else if (errorParam === "bad_credentials") {
+      setError("Invalid credentials. Please log in again.")
+    } else if (errorParam === "access_token_missing") {
+      setError("Access token is missing. Please log in again.")
+    } else {
+      setError(null)
     }
   }, [searchParams])
 
   const handleGitHubLogin = () => {
     setIsLoading(true)
     setError(null)
-    window.location.href = "/api/auth/login"
+    window.location.href = "/api/auth/sign-in"
   }
 
   return (
@@ -76,12 +82,12 @@ export function Login() {
               {isLoading ? (
                 <>
                   <Loader2 className="animate-spin" />
-                  Connecting...
+                  Signing In...
                 </>
               ) : (
                 <>
                   <GithubIcon className="transition-transform group-hover:scale-110" />
-                  Login with GitHub
+                  Sign In with GitHub
                 </>
               )}
             </Button>

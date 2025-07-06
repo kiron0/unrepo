@@ -87,12 +87,10 @@ export function WhyChoose() {
         <div className="from-primary to-secondary absolute inset-0 rounded-full bg-gradient-to-tr opacity-25 blur-3xl" />
         <div className="from-primary to-secondary shadow-primary/50 group relative mx-auto flex h-48 w-48 items-center justify-center rounded-full bg-gradient-to-tr shadow-2xl sm:h-56 sm:w-56 md:h-64 md:w-64 lg:h-80 lg:w-80">
           <Image
-            src={Logo.src}
+            src={Logo}
             alt="Logo"
             width={1080}
             height={1080}
-            placeholder="blur"
-            blurDataURL={Logo.blurDataURL}
             draggable={false}
             onContextMenu={(e) => e.preventDefault()}
             className="size-32 object-cover transition-transform duration-300 select-none hover:scale-105 sm:size-36 md:size-44 lg:size-52"

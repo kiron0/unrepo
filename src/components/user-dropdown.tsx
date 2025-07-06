@@ -42,7 +42,7 @@ export function UserDropdown({
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" }).then((res) => {
+      await fetch("/api/auth/sign-out", { method: "POST" }).then((res) => {
         if (res.ok) {
           notifySuccess({
             description: "You have been logged out successfully.",
