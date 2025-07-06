@@ -9,7 +9,6 @@ import { ChevronRightIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
-import { ThemeSwitcher } from "@/components/theme-switcher"
 import { UserDropdown } from "@/components/user-dropdown"
 
 interface NavbarProps {
@@ -82,7 +81,6 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
           </Link>
           <div className="hidden items-center gap-4 md:flex">
             <AuthButton />
-            <ThemeSwitcher />
           </div>
           <div className="flex items-center gap-2 md:hidden">
             <AuthButton />

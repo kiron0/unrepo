@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { clearCachedUserData, getCachedUserData } from "@/utils/cache"
-import { LogOut, UserIcon } from "lucide-react"
+import { LogOutIcon, UserIcon } from "lucide-react"
 import { useRouter } from "nextjs-toploader/app"
 import { GoRepo } from "react-icons/go"
 
@@ -17,6 +17,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
 import { AlertDialogHelper } from "@/components/alert-dialog-helper"
 import { notifySuccess } from "@/components/toast"
 
@@ -96,7 +97,7 @@ export function UserDropdown({
           )}
         >
           <DropdownMenuLabel>
-            <div className="mt-5 mb-2 flex flex-col items-center justify-center gap-3">
+            <div className="mt-5 flex flex-col items-center justify-center gap-3">
               <div className="ring-primary rounded-full p-1 ring-1">
                 <Avatar className="h-16 w-16">
                   <AvatarImage
@@ -119,20 +120,21 @@ export function UserDropdown({
               </div>
             </div>
           </DropdownMenuLabel>
+          <Separator className="my-2" />
           <Link href="/profile">
-            <DropdownMenuItem className="flex cursor-pointer items-center gap-2 py-3">
+            <DropdownMenuItem className="flex cursor-pointer items-center gap-2 py-2">
               <UserIcon /> Profile
             </DropdownMenuItem>
           </Link>
           <Link href="/repos">
-            <DropdownMenuItem className="flex cursor-pointer items-center gap-2 py-3">
+            <DropdownMenuItem className="flex cursor-pointer items-center gap-2 py-2">
               <GoRepo /> Repositories
             </DropdownMenuItem>
           </Link>
           <AlertDialogHelper
             trigger={
               <div className="focus:bg-accent focus:text-accent-foreground sm:hover:bg-accent sm:hover:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-sm transition-colors outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-                <LogOut className="h-4 w-4" />
+                <LogOutIcon className="h-4 w-4" />
                 Logout
               </div>
             }

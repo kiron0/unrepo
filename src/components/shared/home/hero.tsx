@@ -46,7 +46,7 @@ export function Hero({ isLoggedIn }: HeroProps) {
   }
 
   return (
-    <div className="mx-auto mb-20 w-full text-center">
+    <div className="mx-auto mb-14 w-full text-center lg:mb-20">
       <div className="text-muted-foreground mx-auto mb-6 w-fit rounded-full border px-3 py-2 text-xs font-medium sm:px-4 sm:text-sm">
         <ZapIcon className="mr-1.5 inline-flex h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
         <span>Clean up your GitHub repositories effortlessly</span>
@@ -65,7 +65,7 @@ export function Hero({ isLoggedIn }: HeroProps) {
         and remove unwanted repositories with advanced filtering and batch
         operations.
       </p>
-      <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+      <div className="flex flex-col items-center gap-4 pt-5 sm:flex-row sm:justify-center">
         <AuthButton />
       </div>
     </div>
