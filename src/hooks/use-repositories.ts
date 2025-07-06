@@ -287,6 +287,8 @@ export function useRepositories() {
         notifySuccess({
           description: `Repository ${fullName} deleted successfully`,
         })
+
+        router.refresh()
       }
     } catch (error) {
       console.error("Error deleting repository:", error)
@@ -321,6 +323,8 @@ export function useRepositories() {
           title: "Batch Delete Complete",
           description: result.message,
         })
+
+        router.refresh()
 
         return true // Success
       }
