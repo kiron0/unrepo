@@ -49,8 +49,9 @@ export async function setGitHubToken(token: string): Promise<boolean> {
     cookieStore.set(siteConfig.storage.TOKEN.CACHE_KEY, token, {
       expires: siteConfig.storage.TOKEN.CACHE_DURATION,
       path: "/",
+      httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "lax",
     })
     return true
   } catch (error) {
