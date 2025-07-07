@@ -72,10 +72,11 @@ export function RepoCard({
           }
           title={`Delete Repository "${repo.name}"`}
           description={`This action cannot be undone. The repository "${repo.name}" will be permanently deleted.`}
-          func={() => handleDelete()}
+          func={handleDelete}
           disabled={isDeleting}
           open={isDeleteOpen}
           setOpen={setIsDeleteOpen}
+          isLoading={isDeleting}
         />
       </div>
       <CardHeader>

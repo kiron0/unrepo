@@ -48,6 +48,8 @@ export function ReposHeader({
           func={onLogout}
           open={isOpen}
           setOpen={setIsOpen}
+          disabled={loading}
+          isLoading={loading}
         />
       </div>
     </div>

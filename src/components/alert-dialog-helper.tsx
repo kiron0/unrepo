@@ -26,6 +26,7 @@ interface AlertDialogHelperProps {
   open?: boolean
   setOpen?: (open: boolean) => void
   disabled?: boolean
+  isLoading?: boolean
 }
 
 export function AlertDialogHelper({
@@ -38,13 +39,12 @@ export function AlertDialogHelper({
   disabled,
   open,
   setOpen,
+  isLoading = false,
 }: AlertDialogHelperProps) {
   return (
     <div className={cn("relative", className)}>
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogTrigger asChild disabled={disabled}>
-          {trigger}
-        </AlertDialogTrigger>
+        <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -57,14 +57,14 @@ export function AlertDialogHelper({
           </AlertDialogHeader>
           <div>{children}</div>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={disabled}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <Button
               onClick={func}
               disabled={disabled}
               className={cn(disabled ? "flex items-center gap-2" : "")}
             >
               Continue{" "}
-              {disabled && <LoaderCircle size={15} className="animate-spin" />}
+              {isLoading && <LoaderCircle size={15} className="animate-spin" />}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

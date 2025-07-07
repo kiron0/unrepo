@@ -39,7 +39,7 @@ function ReposSuspense() {
       <ReposHeader
         onRefresh={refreshRepositories}
         onLogout={handleLogout}
-        loading={loading}
+        loading={loading || isLoggingOut}
         isOpen={isOpen}
         setIsOpen={setIsOpen}
       />

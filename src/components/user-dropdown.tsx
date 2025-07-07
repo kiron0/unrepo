@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { clearCachedUserData, getCachedUserData } from "@/utils/cache"
+import axios from "axios"
 import { LogOutIcon, UserIcon } from "lucide-react"
 import { useRouter } from "nextjs-toploader/app"
 import { GoRepo } from "react-icons/go"
@@ -31,6 +32,7 @@ export function UserDropdown({
   contentClassName,
 }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const router = useRouter()
   const pathname = usePathname()
@@ -38,14 +40,14 @@ export function UserDropdown({
   const user = getCachedUserData()
 
   const handleLogout = async () => {
+    setIsLoggingOut(true)
     try {
-      await fetch("/api/auth/sign-out", { method: "POST" }).then((res) => {
-        if (res.ok) {
-          notifySuccess({
-            description: "You have been logged out successfully.",
-          })
-        }
-      })
+      const res = await axios.post("/api/auth/sign-out")
+      if (res.status === 200) {
+        notifySuccess({
+          description: "You have been logged out successfully.",
+        })
+      }
 
       await clearCachedUserData()
 
@@ -58,6 +60,8 @@ export function UserDropdown({
     } catch (error) {
       console.error("Logout error:", error)
       router.push("/")
+    } finally {
+      setIsLoggingOut(false)
     }
   }
 
@@ -140,9 +144,11 @@ export function UserDropdown({
             }
             title="Are you sure you want to logout?"
             description="You will be logged out and redirected to the home page."
-            func={() => handleLogout()}
+            func={handleLogout}
             open={isOpen}
             setOpen={setIsOpen}
+            disabled={isLoggingOut}
+            isLoading={isLoggingOut}
           />
         </DropdownMenuContent>
       </DropdownMenu>

@@ -302,6 +302,9 @@ export function useRepositories() {
   const batchDeleteRepositories = async () => {
     if (selectedRepos.length === 0) return
 
+    console.log("Selected repositories for batch delete:", selectedRepos)
+    return
+
     try {
       const response = await axios.delete("/api/github/batch-delete", {
         data: { repoNames: selectedRepos },
