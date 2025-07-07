@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
-import { getGitHubToken } from "@/utils/cookies"
-import { githubAPI } from "@/utils/github-api"
+import { getGitHubToken, githubAPI } from "@/utils"
 
 export async function GET() {
   try {

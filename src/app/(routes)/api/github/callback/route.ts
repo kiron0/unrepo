@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getAccessToken, setValidGitHubToken } from "@/utils/cookies"
+import { getAccessToken, setValidGitHubToken } from "@/utils"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.nextUrl)

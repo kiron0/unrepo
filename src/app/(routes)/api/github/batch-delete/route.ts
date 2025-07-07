@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getGitHubToken } from "@/utils/cookies"
+import { getGitHubToken } from "@/utils"
 import axios from "axios"
 
 export async function DELETE(request: NextRequest) {

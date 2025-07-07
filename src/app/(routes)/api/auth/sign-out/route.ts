@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { removeGitHubToken } from "@/utils/cookies"
+import { removeGitHubToken } from "@/utils"
 
 export async function POST() {
   try {

@@ -1,4 +1,4 @@
-import { getGitHubToken } from "@/utils/cookies"
+import { getGitHubToken } from "@/utils"
 
 import { About } from "@/components/shared/about"
 

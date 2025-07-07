@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { GitHubUser, Repository } from "@/types"
-import { clearCachedUserData, setCachedUserData } from "@/utils/cache"
+import { clearCachedUserData, setCachedUserData } from "@/utils"
 import axios from "axios"
 
 import type { FilterParams } from "@/components/shared/repos/repo-filters"

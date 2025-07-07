@@ -1,5 +1,5 @@
 import { type Metadata } from "next"
-import { getCachedUserData } from "@/utils/cache"
+import { getCachedUserData } from "@/utils"
 
 import { Repos } from "@/components/shared/repos"
 

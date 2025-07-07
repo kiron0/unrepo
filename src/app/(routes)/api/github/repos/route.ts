@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getGitHubToken, removeGitHubToken } from "@/utils/cookies"
+import { getGitHubToken, removeGitHubToken } from "@/utils"
 import axios, { AxiosError } from "axios"
 
 interface GitHubParams {

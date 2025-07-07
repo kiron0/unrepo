@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { siteConfig } from "@/config"
-import { getBaseURL } from "@/utils/base-url"
+import { getBaseURL } from "@/utils"
 
 import { NotFound } from "@/components/not-found"
 

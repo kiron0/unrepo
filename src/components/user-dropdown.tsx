@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { clearCachedUserData, getCachedUserData } from "@/utils/cache"
+import { clearCachedUserData, getCachedUserData } from "@/utils"
 import axios from "axios"
 import { LogOutIcon, UserIcon } from "lucide-react"
 import { useRouter } from "nextjs-toploader/app"

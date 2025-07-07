@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 
 import "@/styles/globals.css"
 
-import { getBaseURL } from "@/utils/base-url"
+import { getBaseURL } from "@/utils"
 
 const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
