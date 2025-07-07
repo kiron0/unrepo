@@ -219,7 +219,7 @@ export function RepoFilters({
               <Select
                 value={`${filters.sort}-${filters.direction}`}
                 onValueChange={(value) => {
-                  const [sort, direction] = value.split("-") as [
+                  const [sort, direction] = value?.split("-") as [
                     FilterParams["sort"],
                     FilterParams["direction"],
                   ]

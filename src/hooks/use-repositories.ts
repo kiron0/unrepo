@@ -11,7 +11,7 @@ import { notifyError, notifySuccess } from "@/components/toast"
 
 export function useRepositories() {
   const [repositories, setRepositories] = useState<Repository[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [selectedRepos, setSelectedRepos] = useState<string[]>([])
   const [totalPages, setTotalPages] = useState(1)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -183,7 +183,6 @@ export function useRepositories() {
 
   const fetchRepositories = useCallback(
     async (currentFilters: FilterParams) => {
-      setLoading(true)
       try {
         const repos = await fetchRepositoriesFromAPI(currentFilters)
 
@@ -202,7 +201,7 @@ export function useRepositories() {
         setLoading(false)
       }
     },
-    [fetchRepositoriesFromAPI, setRepositoriesSafe]
+    [setRepositoriesSafe, fetchRepositoriesFromAPI]
   )
 
   const refreshRepositories = useCallback(async () => {
@@ -302,9 +301,6 @@ export function useRepositories() {
   const batchDeleteRepositories = async () => {
     if (selectedRepos.length === 0) return
 
-    console.log("Selected repositories for batch delete:", selectedRepos)
-    return
-
     try {
       const response = await axios.delete("/api/github/batch-delete", {
         data: { repoNames: selectedRepos },
@@ -382,6 +378,10 @@ export function useRepositories() {
     }
   }
 
+  const handleDragSelection = (selectedIds: string[]) => {
+    setSelectedRepos(selectedIds)
+  }
+
   const clearAllFilters = useCallback(() => {
     const defaultFilters: FilterParams = {
       search: "",
@@ -451,5 +451,6 @@ export function useRepositories() {
     selectAllRepos,
     fetchRepositories,
     clearAllFilters,
+    handleDragSelection,
   }
 }

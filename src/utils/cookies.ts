@@ -5,6 +5,8 @@ import { siteConfig } from "@/config"
 import { GitHubUser } from "@/types"
 import axios, { AxiosResponse } from "axios"
 
+import { validateGitHubTokenOptimized } from "./github-api"
+
 export async function getAccessToken(code: string): Promise<string> {
   return axios
     .post<{ access_token: string }>(
@@ -207,21 +209,5 @@ export async function fetchGitHubUser(
     })
 
     return null
-  }
-}
-
-/**
- * Enhanced validation that reuses user data fetch
- */
-export async function validateGitHubTokenOptimized(
-  token: string
-): Promise<boolean> {
-  try {
-    // Try to fetch user data (which includes validation)
-    const userData = await fetchGitHubUser(token)
-    return userData !== null
-  } catch (error) {
-    console.error("Token validation failed:", error)
-    return false
   }
 }

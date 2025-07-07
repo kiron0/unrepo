@@ -32,6 +32,7 @@ function ReposSuspense() {
     toggleRepoSelection,
     selectAllRepos,
     clearAllFilters,
+    handleDragSelection,
   } = useRepositories()
 
   return (
@@ -75,6 +76,7 @@ function ReposSuspense() {
             filters={filters}
             onToggleSelection={toggleRepoSelection}
             onDelete={deleteRepository}
+            onDragSelection={handleDragSelection}
           />
           <RepoPagination
             currentPage={filters.page}

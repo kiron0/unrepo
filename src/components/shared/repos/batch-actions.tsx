@@ -29,7 +29,7 @@ export function BatchActions({
   const [inputValue, setInputValue] = useState("")
   const [pasteError, setPasteError] = useState("")
 
-  const username = selectedRepos[0].split("/")[0]
+  const username = selectedRepos[0]?.split("/")[0]
 
   useEffect(() => {
     if (isBatchOpen) {

@@ -1,6 +1,9 @@
 import type { Repository } from "@/types"
 import { AlertTriangle } from "lucide-react"
 
+import { cn } from "@/lib/utils"
+import { useDragSelection } from "@/hooks/use-drag-selection"
+
 import { RepoCard } from "./repo-card"
 import type { FilterParams } from "./repo-filters"
 
@@ -10,6 +13,7 @@ interface RepositoriesListProps {
   filters: FilterParams
   onToggleSelection: (fullName: string) => void
   onDelete: (fullName: string) => Promise<void>
+  onDragSelection: (selectedIds: string[]) => void
 }
 
 export function RepositoriesList({
@@ -18,7 +22,21 @@ export function RepositoriesList({
   filters,
   onToggleSelection,
   onDelete,
+  onDragSelection,
 }: RepositoriesListProps) {
+  const {
+    containerRef,
+    registerItemRef,
+    handleMouseDown,
+    isSelecting,
+    getSelectionBoxStyle,
+    shiftPressed,
+  } = useDragSelection({
+    items: repositories,
+    selectedItems: selectedRepos,
+    onSelectionChange: onDragSelection,
+    getItemId: (repo) => repo.full_name,
+  })
   if (
     !repositories ||
     !Array.isArray(repositories) ||
@@ -37,7 +55,23 @@ export function RepositoriesList({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+    <div
+      ref={containerRef}
+      className={cn(
+        "relative grid grid-cols-1 gap-4 transition-all duration-200 lg:grid-cols-2 xl:grid-cols-3",
+        shiftPressed ? "cursor-crosshair" : "cursor-default",
+        isSelecting ? "select-none" : ""
+      )}
+      onMouseDown={(e) => {
+        if (shiftPressed) {
+          e.preventDefault()
+          handleMouseDown(e)
+        }
+      }}
+      style={{
+        userSelect: shiftPressed || isSelecting ? "none" : "auto",
+      }}
+    >
       {repositories.map((repo) => (
         <RepoCard
           key={repo.id}
@@ -45,8 +79,20 @@ export function RepositoriesList({
           isSelected={selectedRepos.includes(repo.full_name)}
           onToggleSelection={onToggleSelection}
           onDelete={onDelete}
+          registerRef={(element) => registerItemRef(repo.full_name, element)}
+          isDragSelecting={isSelecting}
+          shiftPressed={shiftPressed}
         />
       ))}
+
+      {isSelecting && (
+        <div
+          style={{
+            ...getSelectionBoxStyle(),
+            animation: "fadeInScale 0.1s ease-out",
+          }}
+        />
+      )}
     </div>
   )
 }

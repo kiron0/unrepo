@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { Repository } from "@/types"
 import { Trash2 } from "lucide-react"
 import moment from "moment"
@@ -26,6 +26,9 @@ interface RepoCardProps {
   isSelected: boolean
   onToggleSelection: (fullName: string) => void
   onDelete: (fullName: string) => Promise<void>
+  registerRef?: (element: HTMLElement | null) => void
+  isDragSelecting?: boolean
+  shiftPressed?: boolean
 }
 
 export function RepoCard({
@@ -33,9 +36,19 @@ export function RepoCard({
   isSelected,
   onToggleSelection,
   onDelete,
+  registerRef,
+  isDragSelecting = false,
+  shiftPressed = false,
 }: RepoCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (registerRef && cardRef.current) {
+      registerRef(cardRef.current)
+    }
+  }, [registerRef])
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -49,72 +62,86 @@ export function RepoCard({
   }
 
   return (
-    <Card
-      className={cn(
-        "hover:ring-primary relative cursor-pointer transition-all duration-300 hover:shadow-md hover:ring",
-        isSelected ? "ring-primary ring" : ""
-      )}
-      onClick={() => onToggleSelection(repo.full_name)}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="absolute top-6 right-6"
+    <div>
+      <Card
+        ref={cardRef}
+        className={cn(
+          "hover:ring-primary relative cursor-pointer transition-all duration-300 hover:shadow-md hover:ring",
+          isSelected ? "ring-primary shadow-lg ring" : "",
+          isDragSelecting || shiftPressed
+            ? "pointer-events-none select-none"
+            : ""
+        )}
+        onClick={() =>
+          !isDragSelecting && !shiftPressed && onToggleSelection(repo.full_name)
+        }
+        onMouseDown={(e) => {
+          if (shiftPressed) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
+        }}
       >
-        <AlertDialogHelper
-          trigger={
-            <Button
-              variant="destructive"
-              size="sm"
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-6 right-6"
+        >
+          <AlertDialogHelper
+            trigger={
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Trash2 />
+              </Button>
+            }
+            title={`Delete Repository "${repo.name}"`}
+            description={`This action cannot be undone. The repository "${repo.name}" will be permanently deleted.`}
+            func={handleDelete}
+            disabled={isDeleting}
+            open={isDeleteOpen}
+            setOpen={setIsDeleteOpen}
+            isLoading={isDeleting}
+          />
+        </div>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Checkbox
+              id={`repo-${repo.id}`}
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelection(repo.full_name)}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <a
+              href={repo.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-2/3 items-center truncate hover:underline"
               onClick={(e) => e.stopPropagation()}
             >
-              <Trash2 />
-            </Button>
-          }
-          title={`Delete Repository "${repo.name}"`}
-          description={`This action cannot be undone. The repository "${repo.name}" will be permanently deleted.`}
-          func={handleDelete}
-          disabled={isDeleting}
-          open={isDeleteOpen}
-          setOpen={setIsDeleteOpen}
-          isLoading={isDeleting}
-        />
-      </div>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Checkbox
-            id={`repo-${repo.id}`}
-            checked={isSelected}
-            onCheckedChange={() => onToggleSelection(repo.full_name)}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <a
-            href={repo.html_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-2/3 items-center truncate hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {repo.name}
-          </a>
-        </CardTitle>
-        <CardDescription>
-          {repo.description || "No description"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-wrap items-center gap-4">
-        {repo.language && <Badge variant="secondary">{repo.language}</Badge>}
-        {repo.private && <Badge variant="outline">Private</Badge>}
-        <p className="text-muted-foreground flex items-center gap-1 text-sm">
-          <FaStar className="text-yellow-500" /> {repo.stargazers_count}
-        </p>
-        <p className="text-muted-foreground flex items-center gap-1 text-sm">
-          <GoRepoForked /> {repo.forks_count}
-        </p>
-      </CardContent>
-      <CardFooter className="text-muted-foreground text-xs">
-        Last updated {moment(repo.updated_at).fromNow()} (
-        {moment(repo.updated_at).format("MMM Do, YYYY, hh:mm:ss A")})
-      </CardFooter>
-    </Card>
+              {repo.name}
+            </a>
+          </CardTitle>
+          <CardDescription>
+            {repo.description || "No description"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-center gap-4">
+          {repo.language && <Badge variant="secondary">{repo.language}</Badge>}
+          {repo.private && <Badge variant="outline">Private</Badge>}
+          <p className="text-muted-foreground flex items-center gap-1 text-sm">
+            <FaStar className="text-yellow-500" /> {repo.stargazers_count}
+          </p>
+          <p className="text-muted-foreground flex items-center gap-1 text-sm">
+            <GoRepoForked /> {repo.forks_count}
+          </p>
+        </CardContent>
+        <CardFooter className="text-muted-foreground text-xs">
+          Last updated {moment(repo.updated_at).fromNow()} (
+          {moment(repo.updated_at).format("MMM Do, YYYY, hh:mm:ss A")})
+        </CardFooter>
+      </Card>
+    </div>
   )
 }
